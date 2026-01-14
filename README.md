@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Eventos Maranatha
 
-## Getting Started
+Sistema de gestión de eventos semi-estático con panel de administración.
 
-First, run the development server:
+## Tecnologías
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Framework**: Next.js 14+ (App Router)
+- **Base de Datos**: Supabase
+- **Imágenes**: Cloudinary
+- **Estilos**: Tailwind CSS
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Configuración Inicial
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1.  **Variables de Entorno**
+    Crea un archivo `.env.local` en la raíz del proyecto y agrega tus claves:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    ```env
+    NEXT_PUBLIC_SUPABASE_URL=tuy_url_de_supabase
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key_de_supabase
+    NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=tu_cloud_name
+    NEXT_PUBLIC_CLOUDINARY_API_KEY=tu_api_key
+    CLOUDINARY_API_SECRET=tu_api_secret
+    ```
 
-## Learn More
+2.  **Base de Datos**
+    Ejecuta el script SQL proporcionado en `../supabase_setup.sql` en el SQL Editor de Supabase.
 
-To learn more about Next.js, take a look at the following resources:
+3.  **Cloudinary**
+    En tu dashboard de Cloudinary:
+    - Ve a Settings -> Upload
+    - Agrega un "Upload preset" nuevo
+    - Ponle de nombre: `ml_default`
+    - Mode: Unsigned (importante para que funcione sin backend complejo)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4.  **Ejecutar Proyecto**
+    ```bash
+    npm run dev
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Probar Conexiones
 
-## Deploy on Vercel
+Visita [http://localhost:3000/test-connection](http://localhost:3000/test-connection) para verificar que Supabase y Cloudinary estén conectados correctamente.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+https://github.com/ZxeroZ/eventosmaranatha.git

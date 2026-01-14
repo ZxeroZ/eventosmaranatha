@@ -1,0 +1,58 @@
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
+
+export async function updateSession(request: NextRequest) {
+    let supabaseResponse = NextResponse.next({
+        request,
+    })
+
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                getAll() {
+                    return request.cookies.getAll()
+                },
+                setAll(cookiesToSet) {
+                    cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+                    supabaseResponse = NextResponse.next({
+                        request,
+                    })
+                    cookiesToSet.forEach(({ name, value, options }) =>
+                        supabaseResponse.cookies.set(name, value, options)
+                    )
+                },
+            },
+        }
+    )
+
+    // IMPORTANTE: NO cachear la respuesta de getUser
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    console.log('Middleware Path:', request.nextUrl.pathname);
+    console.log('Middleware User ID:', user?.id || 'No user');
+
+    // Proteger rutas /admin
+    if (request.nextUrl.pathname.startsWith('/admin') && !request.nextUrl.pathname.startsWith('/admin/login')) {
+        if (!user) {
+            console.log('Middleware: Redirecting to login (No user)');
+            // Si no hay usuario, redirigir al login
+            const url = request.nextUrl.clone()
+            url.pathname = '/admin/login'
+            return NextResponse.redirect(url)
+        }
+    }
+
+    // Si el usuario está logueado y va al login, mandarlo al dashboard
+    if (request.nextUrl.pathname === '/admin/login' && user) {
+        console.log('Middleware: Redirecting to dashboard (User exists)');
+        const url = request.nextUrl.clone()
+        url.pathname = '/admin'
+        return NextResponse.redirect(url)
+    }
+
+    return supabaseResponse
+}
