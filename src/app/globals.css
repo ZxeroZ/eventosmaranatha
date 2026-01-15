@@ -1,26 +1,98 @@
 @import "tailwindcss";
 
+/* ============================================
+   SISTEMA DE DISEÑO - EVENTOS MARANATHA
+   ============================================ */
+
+/* Paleta de colores principal */
 :root {
+  /* Colores principales - Verde Salvia (oscuro a claro) */
+  --color-primary: #527a5a;
+  /* Verde oscuro - elementos importantes */
+  --color-primary-dark: #3d5c43;
+  --color-primary-light: #6b8e73;
+
+  --color-secondary: #84a98c;
+  /* Verde medio */
+  --color-secondary-dark: #6b8e73;
+  --color-secondary-light: #a3c4ab;
+
+  --color-accent: #c5ddc9;
+  /* Verde claro - fondos, acentos suaves */
+  --color-accent-dark: #a3c4ab;
+  --color-accent-light: #e0efe3;
+
+  /* Colores de fondo y texto */
   --background: #ffffff;
   --foreground: #171717;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+
+  /* Fuente */
+  --font-family: 'Roboto', sans-serif;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--color-primary);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-primary-light: var(--color-primary-light);
+  --color-secondary: var(--color-secondary);
+  --color-secondary-dark: var(--color-secondary-dark);
+  --color-secondary-light: var(--color-secondary-light);
+  --color-accent: var(--color-accent);
+  --color-accent-dark: var(--color-accent-dark);
+  --color-accent-light: var(--color-accent-light);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --font-sans: var(--font-family);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Reset y estilos base */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-family);
+}
+
+/* Utilidades personalizadas */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Subrayado animado que aparece de poco a poco */
+.link-underline {
+  position: relative;
+}
+
+.link-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--color-primary);
+  transition: width 0.3s ease;
+}
+
+.link-underline:hover::after {
+  width: 100%;
+}
+
+/* Sombra sutil con color primario */
+.shadow-primary-sm {
+  box-shadow: 0 4px 12px rgba(82, 122, 90, 0.15);
 }
