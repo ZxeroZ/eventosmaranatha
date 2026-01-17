@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import HeroCarousel from "@/components/HeroCarousel";
+import ServicesCarousel from "@/components/ServicesCarousel";
+import Navbar from "@/components/Navbar";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -14,60 +16,98 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header + Hero combinados en grid 50/50 */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="lg:grid lg:grid-cols-2 gap-6 lg:gap-10 min-h-screen py-3 sm:py-5 lg:py-6">
+      {/* ============ HERO MÓVIL / TABLET - Imagen 50% arriba ============ */}
+      <div className="lg:hidden">
+        {/* Contenedor de imagen + navbar flotante */}
+        <div className="relative h-[50vh]">
+          {/* Carrusel de fondo */}
+          <div className="absolute inset-0 rounded-b-3xl overflow-hidden">
+            <HeroCarousel
+              images={[
+                "/img/mesas.jpeg",
+                "/img/blanco.webp",
+                "/img/rosado.webp"
+              ]}
+            />
+            {/* Overlay sutil */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/20"></div>
+          </div>
+
+          {/* Navbar flotante transparente */}
+          <Navbar eventos={eventos || []} variant="transparent" />
+        </div>
+
+        {/* Contenido de texto debajo de la imagen */}
+        <div className="px-5 sm:px-8 md:px-12 py-8 sm:py-10 md:py-12 text-center">
+          {/* Subtítulo */}
+          <p className="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-widest mb-5 sm:mb-6">
+            CREAMOS MOMENTOS INOLVIDABLES
+          </p>
+
+          {/* Título - Estilo escalera igual que desktop */}
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 leading-snug mb-8 sm:mb-10">
+            Estilo,
+            <br />
+            <span className="text-primary">Color y Emoción</span>
+            <br />
+            en Cada Evento
+          </h1>
+
+          {/* Estadísticas - Contenedor completo */}
+          <div className="inline-flex bg-gray-100 rounded-2xl items-center shadow-sm mb-8 sm:mb-10">
+            {/* Contador */}
+            <div className="px-4 sm:px-5 py-3 sm:py-4">
+              <p className="text-2xl sm:text-3xl font-bold text-gray-900">50 +</p>
+              <p className="text-xs sm:text-sm text-gray-500">Clientes satisfechos</p>
+            </div>
+
+            {/* Línea divisoria */}
+            <div className="w-px h-12 sm:h-14 bg-gray-300"></div>
+
+            {/* Card descripción con imagen */}
+            <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 overflow-hidden rounded-xl">
+                <img src="/img/mesas.jpeg" alt="Evento" className="w-full h-full object-cover" />
+              </div>
+              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed text-left max-w-[120px] sm:max-w-[150px]">
+                Decoraciones premium para tu evento.
+              </p>
+            </div>
+          </div>
+
+          {/* Botón CTA */}
+          <div>
+            <Link
+              href="https://wa.me/51999999999"
+              target="_blank"
+              className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 sm:px-10 py-3.5 sm:py-4 rounded-full font-medium transition-colors text-sm sm:text-base shadow-lg"
+            >
+              Cotizar Ahora
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* ============ HERO DESKTOP (solo laptop+) ============ */}
+      <div className="hidden lg:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="lg:grid lg:grid-cols-2 gap-8 lg:gap-12 min-h-screen py-4 lg:py-6">
           {/* Columna izquierda - Todo el contenido */}
           <div className="flex flex-col">
-            {/* Navbar */}
-            <nav className="flex items-center justify-between py-3 sm:py-4 lg:py-5">
-              {/* Botón hamburguesa móvil - izquierda */}
-              <button className="md:hidden p-2 rounded-lg hover:bg-gray-100">
-                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
+            {/* Navbar Desktop */}
+            <Navbar eventos={eventos || []} variant="solid" />
 
-              {/* Logo - centrado en móvil */}
-              <Link href="/" className="flex items-center gap-2 md:order-first">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">M</span>
-                </div>
-                <span className="text-lg font-semibold text-gray-900">
-                  Maranatha
-                </span>
-              </Link>
-
-              {/* Enlaces Desktop */}
-              <div className="hidden md:flex items-center gap-6">
-                <Link href="#servicios" className="link-underline text-secondary-dark hover:text-primary font-medium text-sm transition-colors">
-                  Servicios
-                </Link>
-                <Link href="#contacto" className="link-underline text-secondary-dark hover:text-primary font-medium text-sm transition-colors">
-                  Contacto
-                </Link>
-              </div>
-
-              {/* Espaciador móvil para centrar logo */}
-              <div className="w-10 md:hidden"></div>
-            </nav>
-
-            {/* Contenido Hero - debajo del navbar */}
-            <div className="flex-1 flex flex-col justify-center py-3 sm:py-6 lg:py-10">
-              {/* Subtítulo - centrado en móvil */}
-              <p className="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider mb-3 sm:mb-4 text-center lg:text-left">
+            {/* Contenido Hero Desktop */}
+            <div className="flex-1 flex flex-col justify-center py-8 lg:py-12">
+              {/* Subtítulo */}
+              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">
                 CREAMOS MOMENTOS INOLVIDABLES
               </p>
 
-              {/* Título para móvil - estilo escalera */}
-              <h1 className="sm:hidden text-3xl font-bold text-gray-900 leading-tight mb-4 text-center">
-                <span className="text-primary">Decoramos</span>
-                <br />
-                tus momentos
-              </h1>
-
               {/* Título principal - Desktop - Estilo escalera */}
-              <h1 className="hidden sm:block text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight mb-6 lg:text-left">
+              <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight mb-6">
                 Estilo,
                 <br />
                 <span className="text-primary">Color y Emoción</span>
@@ -75,8 +115,8 @@ export default async function Home() {
                 en Cada Evento
               </h1>
 
-              {/* Botón CTA - oculto en móvil */}
-              <div className="hidden sm:block mb-8 sm:mb-12">
+              {/* Botón CTA */}
+              <div className="mb-8 lg:mb-12">
                 <Link
                   href="https://wa.me/51999999999"
                   target="_blank"
@@ -91,38 +131,28 @@ export default async function Home() {
                 </Link>
               </div>
 
-              {/* Estadísticas - Un solo contenedor con divisor */}
+              {/* Estadísticas */}
               <div className="hidden md:inline-flex bg-gray-100 rounded-2xl items-center max-w-sm shadow-primary-sm">
-                {/* Contador */}
                 <div className="px-5 py-4">
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">50 +</p>
-                  <p className="text-xs sm:text-sm text-gray-500">Clientes satisfechos</p>
+                  <p className="text-2xl lg:text-3xl font-bold text-gray-900">50 +</p>
+                  <p className="text-xs lg:text-sm text-gray-500">Clientes satisfechos</p>
                 </div>
-
-                {/* Línea divisoria */}
                 <div className="w-px h-16 bg-gray-300"></div>
-
-                {/* Card descripción */}
                 <div className="flex items-center gap-4 px-5 py-4">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 overflow-hidden rounded-xl">
-                    <img
-                      src="/img/mesas.jpeg"
-                      alt="Evento"
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-16 h-16 lg:w-20 lg:h-20 shrink-0 overflow-hidden rounded-xl">
+                    <img src="/img/mesas.jpeg" alt="Evento" className="w-full h-full object-cover" />
                   </div>
                   <p className="text-xs text-gray-600 leading-relaxed max-w-[180px]">
                     Decoraciones premium y arreglos florales para tu evento.
                   </p>
                 </div>
               </div>
-
             </div>
           </div>
 
           {/* Columna derecha - Carrusel de imágenes */}
-          <div className="relative h-[40vh] sm:h-[50vh] lg:h-full order-first lg:order-last">
-            <div className="relative w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden">
+          <div className="relative h-[40vh] lg:h-full order-first lg:order-last">
+            <div className="relative w-full h-full rounded-3xl overflow-hidden">
               <HeroCarousel
                 images={[
                   "/img/mesas.jpeg",
@@ -131,33 +161,19 @@ export default async function Home() {
                 ]}
               />
 
-              {/* Botón flotante - Cotizar - oculto en móvil */}
-              <div className="hidden sm:block absolute top-4 sm:top-6 right-4 sm:right-6">
-                <button className="bg-primary hover:bg-primary-dark backdrop-blur-sm text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer">
+              {/* Botón flotante - Cotizar */}
+              <div className="absolute top-6 right-6">
+                <button className="bg-primary hover:bg-primary-dark backdrop-blur-sm text-white px-5 py-2.5 rounded-full text-sm font-medium transition-colors cursor-pointer">
                   Cotizar
                 </button>
               </div>
-            </div>
-
-            {/* Botón Cotizar Ahora - Solo móvil, debajo de imagen */}
-            <div className="sm:hidden mt-3 flex justify-center">
-              <Link
-                href="https://wa.me/51999999999"
-                target="_blank"
-                className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-full font-medium transition-colors text-sm shadow-lg"
-              >
-                Cotizar Ahora
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
             </div>
           </div>
         </div>
       </div>
 
       {/* Services Section */}
-      <section id="servicios" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+      <section id="servicios" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-6 md:py-8 lg:py-16">
         <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-3 sm:mb-4">
           Nuestros <span className="text-primary">Servicios</span>
         </h2>
@@ -165,46 +181,7 @@ export default async function Home() {
           Descubre todo lo que podemos hacer para tu próximo evento
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-          {eventos?.map((evento: any) => (
-            <Link href={`/eventos/${evento.id}`} key={evento.id} className="group flex justify-center">
-              <div className="relative h-72 sm:h-80 w-full max-w-[240px] rounded-3xl overflow-hidden bg-gray-100 shadow-md transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl">
-                {/* Imagen de fondo */}
-                <div className="absolute inset-0">
-                  {evento.imagen_url ? (
-                    <img
-                      src={evento.imagen_url}
-                      alt={evento.nombre}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                      <span className="text-white text-5xl sm:text-6xl">🎉</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Pastilla blanca inferior */}
-                <div className="absolute bottom-4 left-4 right-4">
-                  <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-lg">
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">{evento.nombre}</h3>
-                    {evento.descripcion && (
-                      <p className="text-gray-500 text-sm line-clamp-2">{evento.descripcion}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-
-          {(!eventos || eventos.length === 0) && (
-            <div className="col-span-full text-center py-12 sm:py-16 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-              <div className="text-4xl sm:text-5xl mb-4">🎉</div>
-              <p className="text-gray-500 font-medium text-sm sm:text-base">Próximamente más servicios</p>
-              <p className="text-xs sm:text-sm text-gray-400 mt-1">¡Contáctanos para conocer nuestro catálogo!</p>
-            </div>
-          )}
-        </div>
+        <ServicesCarousel eventos={eventos || []} />
       </section>
 
       {/* Footer */}

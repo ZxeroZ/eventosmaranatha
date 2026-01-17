@@ -32,13 +32,9 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    console.log('Middleware Path:', request.nextUrl.pathname);
-    console.log('Middleware User ID:', user?.id || 'No user');
-
     // Proteger rutas /admin
     if (request.nextUrl.pathname.startsWith('/admin') && !request.nextUrl.pathname.startsWith('/admin/login')) {
         if (!user) {
-            console.log('Middleware: Redirecting to login (No user)');
             // Si no hay usuario, redirigir al login
             const url = request.nextUrl.clone()
             url.pathname = '/admin/login'
@@ -48,7 +44,6 @@ export async function updateSession(request: NextRequest) {
 
     // Si el usuario está logueado y va al login, mandarlo al dashboard
     if (request.nextUrl.pathname === '/admin/login' && user) {
-        console.log('Middleware: Redirecting to dashboard (User exists)');
         const url = request.nextUrl.clone()
         url.pathname = '/admin'
         return NextResponse.redirect(url)
