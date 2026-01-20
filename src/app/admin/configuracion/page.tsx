@@ -3,7 +3,7 @@
 import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/types/database';
 import { useEffect, useState } from 'react';
-import { Save, Loader2, RefreshCw } from 'lucide-react';
+import { Save, Loader2, RefreshCw, HelpCircleIcon } from 'lucide-react';
 
 type Configuracion = Database['public']['Tables']['configuracion']['Row'];
 
@@ -140,3 +140,4 @@ export default function ConfiguracionPage() {
         </div>
     );
 }
+// HelpCircleIcon
