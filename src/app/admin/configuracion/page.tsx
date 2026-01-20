@@ -140,4 +140,3 @@ export default function ConfiguracionPage() {
         </div>
     );
 }
-// HelpCircleIcon
