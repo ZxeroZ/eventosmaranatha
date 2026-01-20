@@ -51,10 +51,8 @@ export interface Database {
                     titulo: string
                     descripcion: string
                     foto_principal: string
-                    precio: number | null
                     destacado: boolean
                     activo: boolean
-                    orden: number
                     created_at: string
                     updated_at: string
                 }
@@ -64,10 +62,8 @@ export interface Database {
                     titulo: string
                     descripcion: string
                     foto_principal: string
-                    precio?: number | null
                     destacado?: boolean
                     activo?: boolean
-                    orden?: number
                     created_at?: string
                     updated_at?: string
                 }
@@ -77,10 +73,8 @@ export interface Database {
                     titulo?: string
                     descripcion?: string
                     foto_principal?: string
-                    precio?: number | null
                     destacado?: boolean
                     activo?: boolean
-                    orden?: number
                     created_at?: string
                     updated_at?: string
                 }
