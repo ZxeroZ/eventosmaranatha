@@ -2,9 +2,9 @@
 
 import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/types/database';
-import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, X, Save, Loader2 } from 'lucide-react';
-import { CldUploadWidget } from 'next-cloudinary';
+import { useEffect, useState, useRef } from 'react';
+import { Plus, Pencil, Trash2, X, Loader2, Calendar, Upload } from 'lucide-react';
+import Image from 'next/image';
 
 type Evento = Database['public']['Tables']['eventos']['Row'];
 
@@ -14,6 +14,10 @@ export default function EventosPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentEvento, setCurrentEvento] = useState<Partial<Evento>>({});
     const [saving, setSaving] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [deleteModal, setDeleteModal] = useState<{ open: boolean; evento: Evento | null }>({ open: false, evento: null });
+    const [deleting, setDeleting] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         fetchEventos();
@@ -41,7 +45,6 @@ export default function EventosPage() {
         setSaving(true);
         try {
             if (currentEvento.id) {
-                // Update
                 const updatePayload: Database['public']['Tables']['eventos']['Update'] = {
                     nombre: currentEvento.nombre,
                     descripcion: currentEvento.descripcion,
@@ -55,7 +58,6 @@ export default function EventosPage() {
                     .eq('id', currentEvento.id);
                 if (error) throw error;
             } else {
-                // Insert
                 const insertPayload: Database['public']['Tables']['eventos']['Insert'] = {
                     nombre: currentEvento.nombre!,
                     descripcion: currentEvento.descripcion,
@@ -80,16 +82,20 @@ export default function EventosPage() {
         }
     }
 
-    async function handleDelete(id: string) {
-        if (!confirm('¿Estás seguro? Esto borrará también todos los productos asociados.')) return;
+    async function handleDelete() {
+        if (!deleteModal.evento) return;
 
+        setDeleting(true);
         try {
-            const { error } = await supabase.from('eventos').delete().eq('id', id);
+            const { error } = await supabase.from('eventos').delete().eq('id', deleteModal.evento.id);
             if (error) throw error;
+            setDeleteModal({ open: false, evento: null });
             fetchEventos();
         } catch (error) {
             console.error('Error deleting evento:', error);
             alert('Error al eliminar');
+        } finally {
+            setDeleting(false);
         }
     }
 
@@ -103,172 +109,291 @@ export default function EventosPage() {
         setIsModalOpen(true);
     }
 
-    if (loading) return <div className="p-8 text-center">Cargando eventos...</div>;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            </div>
+        );
+    }
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Gestionar Eventos</h1>
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Eventos</h1>
+                    <p className="text-gray-500 text-sm mt-1">Categorías para organizar tus productos</p>
+                </div>
                 <button
                     onClick={openNew}
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700"
+                    className="bg-primary hover:bg-primary-dark text-white px-4 py-2.5 rounded-xl flex items-center gap-2 transition-colors shadow-sm cursor-pointer"
                 >
-                    <Plus size={20} /> Nuevo Evento
+                    <Plus size={20} />
+                    <span>Nuevo Evento</span>
                 </button>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 border-b border-gray-100">
-                        <tr>
-                            <th className="p-4 font-semibold text-gray-600">Orden</th>
-                            <th className="p-4 font-semibold text-gray-600">Nombre</th>
-                            <th className="p-4 font-semibold text-gray-600">Descripción</th>
-                            <th className="p-4 font-semibold text-gray-600">Estado</th>
-                            <th className="p-4 font-semibold text-gray-600 text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {eventos.map((evento) => (
-                            <tr key={evento.id} className="hover:bg-gray-50">
-                                <td className="p-4 text-gray-500">{evento.orden}</td>
-                                <td className="p-4 font-medium text-gray-900">{evento.nombre}</td>
-                                <td className="p-4 text-gray-500 truncate max-w-xs">{evento.descripcion || '-'}</td>
-                                <td className="p-4">
-                                    <span className={`px-2 py-1 rounded-full text-xs ${evento.activo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            {/* Grid de eventos */}
+            {eventos.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {eventos.map((evento) => (
+                        <div
+                            key={evento.id}
+                            className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-all"
+                        >
+                            {/* Imagen */}
+                            <div className="aspect-video bg-gray-100 relative overflow-hidden">
+                                {evento.imagen_url ? (
+                                    <Image
+                                        src={evento.imagen_url}
+                                        alt={evento.nombre}
+                                        fill
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
+                                        <Calendar className="w-12 h-12 text-primary/40" />
+                                    </div>
+                                )}
+                                {/* Badge de estado */}
+                                <div className="absolute top-3 right-3">
+                                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${evento.activo
+                                        ? 'bg-green-100 text-green-700'
+                                        : 'bg-gray-100 text-gray-600'
+                                        }`}>
                                         {evento.activo ? 'Activo' : 'Inactivo'}
                                     </span>
-                                </td>
-                                <td className="p-4 text-right space-x-2">
+                                </div>
+                            </div>
+
+                            {/* Info */}
+                            <div className="p-4">
+                                <h3 className="font-semibold text-gray-900">{evento.nombre}</h3>
+
+                                {/* Acciones */}
+                                <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
                                     <button
                                         onClick={() => openEdit(evento)}
-                                        className="text-indigo-600 hover:text-indigo-800 p-1"
-                                        title="Editar"
+                                        className="flex-1 text-sm font-medium text-gray-600 hover:text-primary py-2 px-3 rounded-lg hover:bg-primary/5 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                                     >
-                                        <Pencil size={18} />
+                                        <Pencil size={16} />
+                                        Editar
                                     </button>
                                     <button
-                                        onClick={() => handleDelete(evento.id)}
-                                        className="text-red-500 hover:text-red-700 p-1"
-                                        title="Eliminar"
+                                        onClick={() => setDeleteModal({ open: true, evento })}
+                                        className="text-sm font-medium text-red-500 hover:text-red-600 py-2 px-3 rounded-lg hover:bg-red-50 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                                     >
-                                        <Trash2 size={18} />
+                                        <Trash2 size={16} />
                                     </button>
-                                </td>
-                            </tr>
-                        ))}
-                        {eventos.length === 0 && (
-                            <tr>
-                                <td colSpan={5} className="p-8 text-center text-gray-500">
-                                    No hay eventos registrados. ¡Crea el primero!
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+                    <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <Calendar className="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">No hay eventos</h3>
+                    <p className="text-gray-500 text-sm mb-6">Crea tu primer evento para empezar a organizar productos</p>
+                    <button
+                        onClick={openNew}
+                        className="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl inline-flex items-center gap-2 transition-colors"
+                    >
+                        <Plus size={18} />
+                        Crear evento
+                    </button>
+                </div>
+            )}
 
-            {/* Modal / Formulario Flotante */}
+            {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-bold">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                        {/* Header del modal */}
+                        <div className="flex justify-between items-center p-5 border-b border-gray-100">
+                            <h3 className="text-lg font-bold text-gray-900">
                                 {currentEvento.id ? 'Editar Evento' : 'Nuevo Evento'}
                             </h3>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                                <X size={24} />
+                            <button
+                                onClick={() => setIsModalOpen(false)}
+                                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 cursor-pointer"
+                            >
+                                <X size={20} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSave} className="space-y-4">
+                        <form onSubmit={handleSave} className="p-5 space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">Nombre</label>
                                 <input
                                     type="text"
                                     required
-                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                    placeholder="Ej: Bodas"
                                     value={currentEvento.nombre || ''}
                                     onChange={e => setCurrentEvento({ ...currentEvento, nombre: e.target.value })}
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Foto de Portada</label>
-                                <div className="flex items-center gap-4">
-                                    {currentEvento.imagen_url && (
-                                        <img src={currentEvento.imagen_url} alt="Portada" className="w-16 h-16 object-cover rounded" />
-                                    )}
-                                    <CldUploadWidget
-                                        uploadPreset="ml_default"
-                                        onSuccess={(result: any) => {
-                                            setCurrentEvento({ ...currentEvento, imagen_url: result.info.secure_url });
-                                        }}
-                                    >
-                                        {({ open }: any) => (
-                                            <button
-                                                type="button"
-                                                onClick={() => open()}
-                                                className="text-sm bg-gray-100 text-gray-700 px-3 py-2 rounded hover:bg-gray-200 border border-gray-300"
-                                            >
-                                                {currentEvento.imagen_url ? 'Cambiar Imagen' : 'Subir Imagen'}
-                                            </button>
-                                        )}
-                                    </CldUploadWidget>
-                                </div>
-                            </div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">Imagen de portada</label>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                                <textarea
-                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none"
-                                    rows={3}
-                                    value={currentEvento.descripcion || ''}
-                                    onChange={e => setCurrentEvento({ ...currentEvento, descripcion: e.target.value })}
+                                {/* Preview de imagen actual */}
+                                {currentEvento.imagen_url ? (
+                                    <div className="relative mb-3">
+                                        <div className="w-full h-40 relative rounded-xl overflow-hidden bg-gray-100">
+                                            <Image src={currentEvento.imagen_url} alt="Portada" fill className="object-cover" sizes="400px" />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setCurrentEvento({ ...currentEvento, imagen_url: undefined })}
+                                            className="absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    /* Zona de upload */
+                                    <div
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="w-full h-40 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all"
+                                    >
+                                        {uploading ? (
+                                            <>
+                                                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                                                <p className="text-sm text-gray-500">Subiendo...</p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Upload className="w-8 h-8 text-gray-400" />
+                                                <p className="text-sm text-gray-500">Clic para subir imagen</p>
+                                                <p className="text-xs text-gray-400">JPG, PNG, WebP</p>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
+
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+
+                                        setUploading(true);
+                                        try {
+                                            const formData = new FormData();
+                                            formData.append('file', file);
+                                            formData.append('upload_preset', 'ml_default');
+
+                                            const res = await fetch(
+                                                `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                                                { method: 'POST', body: formData }
+                                            );
+
+                                            const data = await res.json();
+                                            if (data.secure_url) {
+                                                setCurrentEvento({ ...currentEvento, imagen_url: data.secure_url });
+                                            }
+                                        } catch (error) {
+                                            console.error('Error uploading:', error);
+                                            alert('Error al subir la imagen');
+                                        } finally {
+                                            setUploading(false);
+                                            if (fileInputRef.current) fileInputRef.current.value = '';
+                                        }
+                                    }}
                                 />
                             </div>
 
-                            <div className="flex gap-4">
-                                <div className="w-1/2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Orden</label>
-                                    <input
-                                        type="number"
-                                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none"
-                                        value={currentEvento.orden || 0}
-                                        onChange={e => setCurrentEvento({ ...currentEvento, orden: parseInt(e.target.value) })}
-                                    />
-                                </div>
-                                <div className="w-1/2 flex items-center mt-6">
-                                    <label className="flex items-center gap-2 cursor-pointer">
+                            {/* Switch Activo */}
+                            <div className="flex items-center">
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                    <div className="relative">
                                         <input
                                             type="checkbox"
-                                            className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                                            className="sr-only peer"
                                             checked={currentEvento.activo ?? true}
                                             onChange={e => setCurrentEvento({ ...currentEvento, activo: e.target.checked })}
                                         />
-                                        <span className="text-sm font-medium text-gray-700">Activo</span>
-                                    </label>
-                                </div>
+                                        <div className="w-11 h-6 bg-gray-200 rounded-full peer-checked:bg-primary transition-colors"></div>
+                                        <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                                    </div>
+                                    <span className="text-sm font-medium text-gray-700">Activo</span>
+                                </label>
                             </div>
 
-                            <div className="flex justify-end gap-3 mt-6">
+                            {/* Acciones del modal */}
+                            <div className="flex gap-3 pt-4">
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"
+                                    className="flex-1 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl border border-gray-200 font-medium transition-colors cursor-pointer"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2"
+                                    className="flex-1 bg-primary hover:bg-primary-dark text-white px-4 py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
                                 >
                                     {saving && <Loader2 className="animate-spin w-4 h-4" />}
-                                    Guardar
+                                    {saving ? 'Guardando...' : 'Guardar'}
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de confirmación de eliminación */}
+            {deleteModal.open && deleteModal.evento && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+                        <div className="p-6 text-center">
+                            {/* Icono de advertencia */}
+                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Trash2 className="w-8 h-8 text-red-500" />
+                            </div>
+
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">
+                                ¿Eliminar evento?
+                            </h3>
+
+                            <p className="text-gray-500 text-sm mb-2">
+                                Estás por eliminar <span className="font-semibold text-gray-700">{deleteModal.evento.nombre}</span>
+                            </p>
+
+                            <p className="text-red-500 text-xs bg-red-50 rounded-lg p-3 mb-6">
+                                ⚠️ Esto también eliminará todos los productos asociados a este evento.
+                            </p>
+
+                            <div className="flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setDeleteModal({ open: false, evento: null })}
+                                    disabled={deleting}
+                                    className="flex-1 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl border border-gray-200 font-medium transition-colors cursor-pointer"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleDelete}
+                                    disabled={deleting}
+                                    className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
+                                >
+                                    {deleting && <Loader2 className="animate-spin w-4 h-4" />}
+                                    {deleting ? 'Eliminando...' : 'Eliminar'}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

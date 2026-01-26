@@ -2,12 +2,13 @@
 
 import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/types/database';
-import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, X, Loader2, Image as ImageIcon } from 'lucide-react';
-import { CldUploadWidget } from 'next-cloudinary';
+import { useEffect, useState, useRef } from 'react';
+import { Plus, Pencil, Trash2, X, Loader2, Package, Upload, Star, Images } from 'lucide-react';
+import Image from 'next/image';
 
 type Producto = Database['public']['Tables']['productos']['Row'];
 type Evento = Database['public']['Tables']['eventos']['Row'];
+type GaleriaFoto = Database['public']['Tables']['galeria_fotos']['Row'];
 
 export default function ProductosPage() {
     const [productos, setProductos] = useState<Producto[]>([]);
@@ -16,6 +17,13 @@ export default function ProductosPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentProducto, setCurrentProducto] = useState<Partial<Producto>>({});
     const [saving, setSaving] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [deleteModal, setDeleteModal] = useState<{ open: boolean; producto: Producto | null }>({ open: false, producto: null });
+    const [deleting, setDeleting] = useState(false);
+    const [galeria, setGaleria] = useState<GaleriaFoto[]>([]);
+    const [uploadingGaleria, setUploadingGaleria] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const galeriaInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         fetchData();
@@ -52,7 +60,6 @@ export default function ProductosPage() {
         setSaving(true);
         try {
             if (currentProducto.id) {
-                // Update
                 const updatePayload: Database['public']['Tables']['productos']['Update'] = {
                     titulo: currentProducto.titulo,
                     descripcion: currentProducto.descripcion,
@@ -67,7 +74,6 @@ export default function ProductosPage() {
                     .eq('id', currentProducto.id);
                 if (error) throw error;
             } else {
-                // Insert
                 const insertPayload: Database['public']['Tables']['productos']['Insert'] = {
                     titulo: currentProducto.titulo!,
                     descripcion: currentProducto.descripcion!,
@@ -93,235 +99,496 @@ export default function ProductosPage() {
         }
     }
 
-    async function handleDelete(id: string) {
-        if (!confirm('¿Estás seguro de eliminar este producto?')) return;
+    async function handleDelete() {
+        if (!deleteModal.producto) return;
 
+        setDeleting(true);
         try {
-            const { error } = await supabase.from('productos').delete().eq('id', id);
+            const { error } = await supabase.from('productos').delete().eq('id', deleteModal.producto.id);
             if (error) throw error;
+            setDeleteModal({ open: false, producto: null });
             fetchData();
         } catch (error) {
             console.error('Error deleting producto:', error);
             alert('Error al eliminar');
+        } finally {
+            setDeleting(false);
         }
     }
 
     function openEdit(producto: Producto) {
         setCurrentProducto(producto);
         setIsModalOpen(true);
+        fetchGaleria(producto.id);
     }
 
     function openNew() {
         setCurrentProducto({ activo: true, destacado: false });
+        setGaleria([]);
         setIsModalOpen(true);
     }
 
-    if (loading) return <div className="p-8 text-center">Cargando productos...</div>;
+    async function fetchGaleria(productoId: string) {
+        try {
+            const { data, error } = await supabase
+                .from('galeria_fotos')
+                .select('*')
+                .eq('producto_id', productoId)
+                .order('orden', { ascending: true });
+
+            if (error) throw error;
+            setGaleria(data || []);
+        } catch (error) {
+            console.error('Error fetching galeria:', error);
+        }
+    }
+
+    async function handleUploadGaleria(file: File) {
+        if (!currentProducto.id) {
+            alert('Primero guarda el producto para agregar fotos a la galería');
+            return;
+        }
+
+        setUploadingGaleria(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'ml_default');
+
+            const res = await fetch(
+                `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                { method: 'POST', body: formData }
+            );
+
+            const data = await res.json();
+            if (data.secure_url) {
+                const { error } = await (supabase
+                    .from('galeria_fotos') as any)
+                    .insert([{
+                        producto_id: currentProducto.id,
+                        url_foto: data.secure_url,
+                        orden: galeria.length
+                    }]);
+
+                if (error) throw error;
+                fetchGaleria(currentProducto.id);
+            }
+        } catch (error) {
+            console.error('Error uploading to galeria:', error);
+            alert('Error al subir la imagen');
+        } finally {
+            setUploadingGaleria(false);
+        }
+    }
+
+    async function handleDeleteGaleriaFoto(fotoId: string) {
+        if (!currentProducto.id) return;
+
+        try {
+            const { error } = await supabase
+                .from('galeria_fotos')
+                .delete()
+                .eq('id', fotoId);
+
+            if (error) throw error;
+            fetchGaleria(currentProducto.id);
+        } catch (error) {
+            console.error('Error deleting galeria foto:', error);
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            </div>
+        );
+    }
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Gestionar Productos</h1>
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Productos</h1>
+                    <p className="text-gray-500 text-sm mt-1">{productos.length} producto{productos.length !== 1 ? 's' : ''} en total</p>
+                </div>
                 <button
                     onClick={openNew}
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700"
+                    className="bg-primary hover:bg-primary-dark text-white px-4 py-2.5 rounded-xl flex items-center gap-2 transition-colors shadow-sm cursor-pointer"
                 >
-                    <Plus size={20} /> Nuevo Producto
+                    <Plus size={20} />
+                    <span>Nuevo Producto</span>
                 </button>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 border-b border-gray-100">
-                        <tr>
-                            <th className="p-4 font-semibold text-gray-600">Imagen</th>
-                            <th className="p-4 font-semibold text-gray-600">Título</th>
-                            <th className="p-4 font-semibold text-gray-600">Categoría</th>
-                            <th className="p-4 font-semibold text-gray-600">Estado</th>
-                            <th className="p-4 font-semibold text-gray-600 text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {productos.map((producto: any) => (
-                            <tr key={producto.id} className="hover:bg-gray-50">
-                                <td className="p-4">
-                                    <div className="w-12 h-12 rounded overflow-hidden bg-gray-100">
-                                        <img
-                                            src={producto.foto_principal}
-                                            alt={producto.titulo}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                </td>
-                                <td className="p-4 font-medium text-gray-900">
-                                    {producto.titulo}
-                                    {producto.destacado && <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">Destacado</span>}
-                                </td>
-                                <td className="p-4 text-gray-500">{producto.eventos?.nombre || 'Sin categoría'}</td>
-                                <td className="p-4">
-                                    <span className={`px-2 py-1 rounded-full text-xs ${producto.activo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                        {producto.activo ? 'Activo' : 'Inactivo'}
-                                    </span>
-                                </td>
-                                <td className="p-4 text-right space-x-2">
-                                    <button
-                                        onClick={() => openEdit(producto)}
-                                        className="text-indigo-600 hover:text-indigo-800 p-1"
-                                        title="Editar"
-                                    >
-                                        <Pencil size={18} />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(producto.id)}
-                                        className="text-red-500 hover:text-red-700 p-1"
-                                        title="Eliminar"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                        {productos.length === 0 && (
+            {/* Tabla */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
-                                <td colSpan={5} className="p-8 text-center text-gray-500">
-                                    No hay productos registrados.
-                                </td>
+                                <th className="p-4 font-semibold text-gray-600 text-sm">Producto</th>
+                                <th className="p-4 font-semibold text-gray-600 text-sm">Categoría</th>
+                                <th className="p-4 font-semibold text-gray-600 text-sm">Estado</th>
+                                <th className="p-4 font-semibold text-gray-600 text-sm text-right">Acciones</th>
                             </tr>
-                        )}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {productos.map((producto: any) => (
+                                <tr key={producto.id} className="hover:bg-gray-50/50 transition-colors">
+                                    <td className="p-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 relative shrink-0">
+                                                {producto.foto_principal ? (
+                                                    <Image
+                                                        src={producto.foto_principal}
+                                                        alt={producto.titulo}
+                                                        fill
+                                                        sizes="48px"
+                                                        className="object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                        <Package size={20} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-900">{producto.titulo}</p>
+                                                {producto.destacado && (
+                                                    <span className="inline-flex items-center gap-1 text-xs text-amber-600 mt-0.5">
+                                                        <Star size={12} fill="currentColor" />
+                                                        Destacado
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="p-4">
+                                        <span className="text-gray-600 text-sm">{producto.eventos?.nombre || 'Sin categoría'}</span>
+                                    </td>
+                                    <td className="p-4">
+                                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${producto.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                            {producto.activo ? 'Activo' : 'Inactivo'}
+                                        </span>
+                                    </td>
+                                    <td className="p-4 text-right">
+                                        <div className="flex items-center justify-end gap-1">
+                                            <button
+                                                onClick={() => openEdit(producto)}
+                                                className="p-2 text-gray-500 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"
+                                                title="Editar"
+                                            >
+                                                <Pencil size={18} />
+                                            </button>
+                                            <button
+                                                onClick={() => setDeleteModal({ open: true, producto })}
+                                                className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                                title="Eliminar"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            {productos.length === 0 && (
+                                <tr>
+                                    <td colSpan={4} className="p-12 text-center">
+                                        <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                                        <p className="text-gray-500 font-medium">No hay productos</p>
+                                        <p className="text-gray-400 text-sm mt-1">Crea tu primer producto</p>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            {/* Modal */}
+            {/* Modal de crear/editar */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-bold">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center p-5 border-b border-gray-100 sticky top-0 bg-white">
+                            <h3 className="text-lg font-bold text-gray-900">
                                 {currentProducto.id ? 'Editar Producto' : 'Nuevo Producto'}
                             </h3>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                                <X size={24} />
+                            <button
+                                onClick={() => setIsModalOpen(false)}
+                                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 cursor-pointer"
+                            >
+                                <X size={20} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSave} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none"
-                                        value={currentProducto.titulo || ''}
-                                        onChange={e => setCurrentProducto({ ...currentProducto, titulo: e.target.value })}
-                                    />
-                                </div>
+                        <form onSubmit={handleSave} className="p-5 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">Título</label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                    placeholder="Nombre del producto"
+                                    value={currentProducto.titulo || ''}
+                                    onChange={e => setCurrentProducto({ ...currentProducto, titulo: e.target.value })}
+                                />
+                            </div>
 
-                                <div className="col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Categoría (Evento)</label>
-                                    <select
-                                        required
-                                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none"
-                                        value={currentProducto.evento_id || ''}
-                                        onChange={e => setCurrentProducto({ ...currentProducto, evento_id: e.target.value })}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">Categoría</label>
+                                <select
+                                    required
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all cursor-pointer"
+                                    value={currentProducto.evento_id || ''}
+                                    onChange={e => setCurrentProducto({ ...currentProducto, evento_id: e.target.value })}
+                                >
+                                    <option value="">Selecciona una categoría...</option>
+                                    {eventos.map(evento => (
+                                        <option key={evento.id} value={evento.id}>{evento.nombre}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">Foto</label>
+
+                                {currentProducto.foto_principal ? (
+                                    <div className="relative mb-2">
+                                        <div className="w-full h-48 relative rounded-xl overflow-hidden bg-gray-50 border border-gray-200">
+                                            <Image src={currentProducto.foto_principal} alt="Preview" fill className="object-contain" sizes="400px" />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setCurrentProducto({ ...currentProducto, foto_principal: undefined })}
+                                            className="absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors cursor-pointer"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="w-full h-40 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all"
                                     >
-                                        <option value="">Selecciona una categoría...</option>
-                                        {eventos.map(evento => (
-                                            <option key={evento.id} value={evento.id}>{evento.nombre}</option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Foto Principal</label>
-                                    <div className="flex items-start gap-4 p-4 border border-dashed border-gray-300 rounded-lg bg-gray-50">
-                                        {currentProducto.foto_principal ? (
-                                            <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-gray-200">
-                                                <img src={currentProducto.foto_principal} alt="Preview" className="w-full h-full object-cover" />
-                                            </div>
+                                        {uploading ? (
+                                            <>
+                                                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                                                <p className="text-sm text-gray-500">Subiendo...</p>
+                                            </>
                                         ) : (
-                                            <div className="w-32 h-32 flex items-center justify-center bg-gray-200 rounded-lg text-gray-400">
-                                                <ImageIcon size={32} />
-                                            </div>
+                                            <>
+                                                <Upload className="w-8 h-8 text-gray-400" />
+                                                <p className="text-sm text-gray-500">Clic para subir imagen</p>
+                                            </>
                                         )}
+                                    </div>
+                                )}
 
-                                        <div className="flex-1">
-                                            <CldUploadWidget
-                                                uploadPreset="ml_default"
-                                                onSuccess={(result: any) => {
-                                                    setCurrentProducto({ ...currentProducto, foto_principal: result.info.secure_url });
-                                                }}
-                                            >
-                                                {({ open }: any) => (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => open()}
-                                                        className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50 shadow-sm"
-                                                    >
-                                                        {currentProducto.foto_principal ? 'Cambiar Imagen' : 'Subir Imagen'}
-                                                    </button>
-                                                )}
-                                            </CldUploadWidget>
-                                            <p className="mt-2 text-xs text-gray-500">
-                                                Sube una foto de alta calidad que represente el producto.
-                                            </p>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+
+                                        setUploading(true);
+                                        try {
+                                            const formData = new FormData();
+                                            formData.append('file', file);
+                                            formData.append('upload_preset', 'ml_default');
+
+                                            const res = await fetch(
+                                                `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                                                { method: 'POST', body: formData }
+                                            );
+
+                                            const data = await res.json();
+                                            if (data.secure_url) {
+                                                setCurrentProducto({ ...currentProducto, foto_principal: data.secure_url });
+                                            }
+                                        } catch (error) {
+                                            console.error('Error uploading:', error);
+                                            alert('Error al subir la imagen');
+                                        } finally {
+                                            setUploading(false);
+                                            if (fileInputRef.current) fileInputRef.current.value = '';
+                                        }
+                                    }}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">Descripción</label>
+                                <textarea
+                                    required
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+                                    rows={3}
+                                    placeholder="Descripción del producto"
+                                    value={currentProducto.descripcion || ''}
+                                    onChange={e => setCurrentProducto({ ...currentProducto, descripcion: e.target.value })}
+                                />
+                            </div>
+
+                            {/* Galería de fotos */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Galería de fotos
+                                    {currentProducto.id && <span className="text-gray-400 font-normal ml-1">({galeria.length} fotos)</span>}
+                                </label>
+
+                                {currentProducto.id ? (
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {galeria.map((foto) => (
+                                            <div key={foto.id} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 group">
+                                                <Image
+                                                    src={foto.url_foto}
+                                                    alt=""
+                                                    fill
+                                                    className="object-cover"
+                                                    sizes="100px"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDeleteGaleriaFoto(foto.id)}
+                                                    className="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                                >
+                                                    <X size={12} />
+                                                </button>
+                                            </div>
+                                        ))}
+
+                                        {/* Botón agregar foto */}
+                                        <div
+                                            onClick={() => galeriaInputRef.current?.click()}
+                                            className="aspect-square border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all"
+                                        >
+                                            {uploadingGaleria ? (
+                                                <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                                            ) : (
+                                                <>
+                                                    <Plus className="w-5 h-5 text-gray-400" />
+                                                    <span className="text-xs text-gray-400">Agregar</span>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl text-center">
+                                        <Images className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                        <p className="text-sm text-gray-500">Guarda el producto primero para agregar fotos a la galería</p>
+                                    </div>
+                                )}
 
-                                <div className="col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                                    <textarea
-                                        required
-                                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none"
-                                        rows={4}
-                                        value={currentProducto.descripcion || ''}
-                                        onChange={e => setCurrentProducto({ ...currentProducto, descripcion: e.target.value })}
-                                    />
-                                </div>
+                                <input
+                                    ref={galeriaInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            handleUploadGaleria(file);
+                                        }
+                                        if (galeriaInputRef.current) galeriaInputRef.current.value = '';
+                                    }}
+                                />
+                            </div>
 
-                                <div className="flex items-center gap-4 mt-2">
-                                    <label className="flex items-center gap-2 cursor-pointer">
+                            {/* Switches */}
+                            <div className="flex items-center gap-6 py-2">
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                    <div className="relative">
                                         <input
                                             type="checkbox"
-                                            className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                                            className="sr-only peer"
                                             checked={currentProducto.activo ?? true}
                                             onChange={e => setCurrentProducto({ ...currentProducto, activo: e.target.checked })}
                                         />
-                                        <span className="text-sm font-medium text-gray-700">Activo</span>
-                                    </label>
+                                        <div className="w-11 h-6 bg-gray-200 rounded-full peer-checked:bg-primary transition-colors"></div>
+                                        <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                                    </div>
+                                    <span className="text-sm font-medium text-gray-700">Activo</span>
+                                </label>
 
-                                    <label className="flex items-center gap-2 cursor-pointer">
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                    <div className="relative">
                                         <input
                                             type="checkbox"
-                                            className="w-4 h-4 text-yellow-600 rounded focus:ring-yellow-500"
+                                            className="sr-only peer"
                                             checked={currentProducto.destacado ?? false}
                                             onChange={e => setCurrentProducto({ ...currentProducto, destacado: e.target.checked })}
                                         />
-                                        <span className="text-sm font-medium text-gray-700">Destacado</span>
-                                    </label>
-                                </div>
+                                        <div className="w-11 h-6 bg-gray-200 rounded-full peer-checked:bg-amber-400 transition-colors"></div>
+                                        <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                                    </div>
+                                    <span className="text-sm font-medium text-gray-700">Destacado</span>
+                                </label>
                             </div>
 
-                            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+                            {/* Botones */}
+                            <div className="flex gap-3 pt-4">
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"
+                                    className="flex-1 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl border border-gray-200 font-medium transition-colors cursor-pointer"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2"
+                                    className="flex-1 bg-primary hover:bg-primary-dark text-white px-4 py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
                                 >
                                     {saving && <Loader2 className="animate-spin w-4 h-4" />}
-                                    Guardar Producto
+                                    {saving ? 'Guardando...' : 'Guardar'}
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de confirmación de eliminación */}
+            {deleteModal.open && deleteModal.producto && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+                        <div className="p-6 text-center">
+                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Trash2 className="w-8 h-8 text-red-500" />
+                            </div>
+
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">
+                                ¿Eliminar producto?
+                            </h3>
+
+                            <p className="text-gray-500 text-sm mb-6">
+                                Estás por eliminar <span className="font-semibold text-gray-700">{deleteModal.producto.titulo}</span>
+                            </p>
+
+                            <div className="flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setDeleteModal({ open: false, producto: null })}
+                                    disabled={deleting}
+                                    className="flex-1 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl border border-gray-200 font-medium transition-colors cursor-pointer"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleDelete}
+                                    disabled={deleting}
+                                    className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
+                                >
+                                    {deleting && <Loader2 className="animate-spin w-4 h-4" />}
+                                    {deleting ? 'Eliminando...' : 'Eliminar'}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

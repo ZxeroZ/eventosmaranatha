@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import HeroCarousel from "@/components/HeroCarousel";
 import ServicesCarousel from "@/components/ServicesCarousel";
+import ProductCard from "@/components/ProductCard";
+import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 
 export default async function Home() {
@@ -13,6 +15,21 @@ export default async function Home() {
     .select('*')
     .eq('activo', true)
     .order('orden', { ascending: true }) as any;
+
+  // Obtener productos activos con info del evento
+  const { data: productos } = await supabase
+    .from('productos')
+    .select('*, eventos(nombre)')
+    .eq('activo', true)
+    .order('created_at', { ascending: false })
+    .limit(8) as any;
+
+  // Obtener redes sociales desde configuración
+  const { data: redesSociales } = await supabase
+    .from('configuracion')
+    .select('clave, valor')
+    .eq('categoria', 'redes_sociales')
+    .eq('mostrar', true) as any;
 
   return (
     <div className="min-h-screen bg-white">
@@ -34,7 +51,7 @@ export default async function Home() {
           </div>
 
           {/* Navbar flotante transparente */}
-          <Navbar eventos={eventos || []} variant="transparent" />
+          <Navbar eventos={eventos || []} redesSociales={redesSociales || []} variant="transparent" />
         </div>
 
         {/* Contenido de texto debajo de la imagen */}
@@ -45,7 +62,7 @@ export default async function Home() {
           </p>
 
           {/* Título - Estilo escalera igual que desktop */}
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 leading-snug mb-8 sm:mb-10">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-snug mb-8 sm:mb-10">
             Estilo,
             <br />
             <span className="text-primary">Color y Emoción</span>
@@ -97,7 +114,8 @@ export default async function Home() {
           {/* Columna izquierda - Todo el contenido */}
           <div className="flex flex-col">
             {/* Navbar Desktop */}
-            <Navbar eventos={eventos || []} variant="solid" />
+            <Navbar eventos={eventos || []} redesSociales={redesSociales || []} variant="solid" />
+
 
             {/* Contenido Hero Desktop */}
             <div className="flex-1 flex flex-col justify-center py-8 lg:py-12">
@@ -118,11 +136,10 @@ export default async function Home() {
               {/* Botón CTA */}
               <div className="mb-8 lg:mb-12">
                 <Link
-                  href="https://wa.me/51999999999"
-                  target="_blank"
+                  href="#productos"
                   className="inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-900 px-5 py-2.5 rounded-full font-medium border border-gray-200 shadow-sm transition-all text-sm"
                 >
-                  Cotizar Ahora
+                  Ver Decoraciones
                   <span className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
                     <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -173,46 +190,185 @@ export default async function Home() {
       </div>
 
       {/* Services Section */}
-      <section id="servicios" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-6 md:py-8 lg:py-16">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-3 sm:mb-4">
-          Nuestros <span className="text-primary">Servicios</span>
-        </h2>
-        <p className="text-center text-gray-500 mb-8 sm:mb-12 max-w-2xl mx-auto text-sm sm:text-base">
-          Descubre todo lo que podemos hacer para tu próximo evento
-        </p>
+      <section id="servicios" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4 relative inline-block">
+            Nuestros <span className="text-primary">Servicios</span>
+            <span className="block w-16 h-1 bg-primary mx-auto mt-2 rounded-full"></span>
+          </h2>
+          <p className="text-gray-500 max-w-2xl mx-auto text-sm md:text-lg">
+            Descubre todo lo que podemos hacer para tu próximo evento
+          </p>
+        </div>
 
         <ServicesCarousel eventos={eventos || []} />
+
+        {/* Botón ver todos los servicios */}
+        <div className="text-center mt-8 sm:mt-10">
+          <Link
+            href="/servicios"
+            className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-6 py-3 sm:px-8 sm:py-3 rounded-full font-medium shadow-sm transition-all text-sm sm:text-base"
+          >
+            Ver todos los servicios
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
+      </section>
+
+      {/* Products Section - Siempre visible */}
+      <section id="productos" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4 relative inline-block">
+            Nuestras <span className="text-primary">Creaciones</span>
+            <span className="block w-16 h-1 bg-primary mx-auto mt-2 rounded-full"></span>
+          </h2>
+          <p className="text-gray-500 max-w-2xl mx-auto text-sm md:text-lg">
+            Conoce algunas de nuestras mejores opciones para tu evento
+          </p>
+        </div>
+
+        {/* Grilla de productos - Sin carrusel */}
+        {productos && productos.length > 0 ? (
+          <>
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+              {productos.map((producto: any) => (
+                <ProductCard key={producto.id} producto={producto} />
+              ))}
+            </div>
+
+            {/* Botón ver todos */}
+            <div className="text-center mt-8 sm:mt-10">
+              <Link
+                href="/productos"
+                className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-6 py-3 sm:px-8 sm:py-3 rounded-full font-medium shadow-sm transition-all text-sm sm:text-base"
+              >
+                Ver todos los productos
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-12 sm:py-16 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+            <div className="text-4xl sm:text-5xl mb-4">📦</div>
+            <p className="text-gray-500 font-medium text-sm sm:text-base">Próximamente más productos</p>
+            <p className="text-xs sm:text-sm text-gray-400 mt-1">¡Contáctanos para conocer nuestro catálogo completo!</p>
+          </div>
+        )}
+      </section>
+
+      {/* Galería Destacada - Momentos Inolvidables */}
+      <section className="bg-white py-16 sm:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-4 md:mb-6 relative inline-block">
+              Momentos <span className="text-primary">Inolvidables</span>
+              <span className="block w-16 h-1 bg-primary mx-auto mt-2 rounded-full"></span>
+            </h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-sm md:text-lg">
+              Mira algunos de los trabajos que hemos hecho con mucho cariño para nuestros clientes. ¡Gracias por confiar en nosotros!
+            </p>
+          </div>
+
+          <div className="max-w-5xl mx-auto mb-20">
+            {/* Galería Bento Responsive */}
+            <div className="grid grid-cols-2 gap-4 h-[500px] sm:h-[600px]">
+              {/* Imagen 1 (Blanco) -> Móvil: Pos 1 / Desktop: Pos 2 (Derecha Arriba) */}
+              <div className="relative rounded-3xl overflow-hidden shadow-lg group order-1 md:order-2">
+                <img
+                  src="/img/blanco.webp"
+                  alt="Decoración Minimalista"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
+              </div>
+
+              {/* Imagen 2 (Rosado) -> Móvil: Pos 2 / Desktop: Pos 3 (Derecha Abajo) */}
+              <div className="relative rounded-3xl overflow-hidden shadow-lg group order-2 md:order-3">
+                <img
+                  src="/img/rosado.webp"
+                  alt="Quinceaños"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
+              </div>
+
+              {/* Imagen Principal (Mesas) -> Móvil: Pos 3 (Abajo Ancho) / Desktop: Pos 1 (Izquierda Alto) */}
+              <div className="relative rounded-3xl overflow-hidden shadow-lg group order-3 col-span-2 md:order-1 md:col-span-1 md:row-span-2">
+                <img
+                  src="/img/mesas.jpeg"
+                  alt="Decoración de Boda"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Por Qué Elegirnos - Tarjetas Sutiles */}
+      <section className="bg-white pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-4 md:mb-6 relative inline-block">
+              ¿Por qué <span className="text-primary">Elegirnos?</span>
+              <span className="block w-16 h-1 bg-primary mx-auto mt-2 rounded-full"></span>
+            </h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-sm md:text-lg">
+              Nuestra experiencia y dedicación garantizan el éxito de tu evento.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+            {/* Item 1 */}
+            <div className="bg-white rounded-2xl p-8 text-center shadow-xl shadow-primary/20">
+              <div className="w-14 h-14 bg-white text-primary rounded-2xl flex items-center justify-center mb-5 mx-auto shadow-sm">
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Diseño Único</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                Hacemos que la decoración de tu evento quede tal como la imaginaste.
+              </p>
+            </div>
+
+            {/* Item 2 */}
+            <div className="bg-white rounded-2xl p-8 text-center shadow-xl shadow-primary/20">
+              <div className="w-14 h-14 bg-white text-primary rounded-2xl flex items-center justify-center mb-5 mx-auto shadow-sm">
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Cero Estrés</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                Nos encargamos de preparar todo para que tú solo te dediques a disfrutar.
+              </p>
+            </div>
+
+            {/* Item 3 */}
+            <div className="bg-white rounded-2xl p-8 text-center shadow-xl shadow-primary/20">
+              <div className="w-14 h-14 bg-white text-primary rounded-2xl flex items-center justify-center mb-5 mx-auto shadow-sm">
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Inolvidable</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                Llenamos tu fiesta de detalles lindos que a todos les van a encantar.
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Footer */}
-      <footer id="contacto" className="bg-gray-900 text-white py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">M</span>
-            </div>
-            <h3 className="text-2xl sm:text-3xl font-bold">
-              Maranatha
-            </h3>
-          </div>
-          <p className="text-gray-400 mb-6 sm:mb-8 max-w-md mx-auto text-sm sm:text-base">
-            Creamos momentos inolvidables para ti y los tuyos
-          </p>
-          <div className="flex justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-            <Link
-              href="https://wa.me/51999999999"
-              target="_blank"
-              className="bg-primary hover:bg-primary-dark text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full font-semibold transition-colors inline-flex items-center gap-2 text-sm sm:text-base"
-            >
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-              </svg>
-              WhatsApp
-            </Link>
-          </div>
-          <p className="text-gray-500 text-xs sm:text-sm">© {new Date().getFullYear()} Eventos Maranatha. Todos los derechos reservados.</p>
-        </div>
-      </footer>
+      <Footer redesSociales={redesSociales || []} eventos={eventos || []} />
     </div>
   );
 }
+
