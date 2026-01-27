@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
 interface Evento {
@@ -44,7 +45,7 @@ export default function ServicesCarousel({ eventos }: ServicesCarouselProps) {
             <div className="relative h-64 sm:h-72 rounded-2xl overflow-hidden bg-gray-100 shadow-lg transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-xl">
                 <div className="absolute inset-0">
                     {evento.imagen_url ? (
-                        <img src={evento.imagen_url} alt={evento.nombre} className="w-full h-full object-cover" />
+                        <Image src={evento.imagen_url} alt={evento.nombre} fill sizes="300px" className="object-cover" />
                     ) : (
                         <div className="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
                             <span className="text-white text-5xl sm:text-6xl">🎉</span>
@@ -62,20 +63,32 @@ export default function ServicesCarousel({ eventos }: ServicesCarouselProps) {
 
     return (
         <>
-            {/* Vista móvil y tablet - Carrusel horizontal con scroll táctil */}
-            <div className="lg:hidden overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4 -mx-4 px-4">
-                <div className="flex gap-4" style={{ width: 'max-content' }}>
+            {/* Vista móvil y tablet - Carrusel horizontal con scroll táctil uno por uno */}
+            <div
+                className="lg:hidden overflow-x-auto scrollbar-hide pb-4"
+                style={{
+                    scrollSnapType: 'x mandatory',
+                    WebkitOverflowScrolling: 'touch'
+                }}
+            >
+                <div
+                    className="flex gap-4 px-[15%]"
+                    style={{ width: 'max-content' }}
+                >
                     {eventos.map((evento, index) => (
                         <Link
                             href={`/eventos/${evento.id}`}
                             key={`mobile-${evento.id}-${index}`}
-                            className="group snap-start shrink-0"
-                            style={{ width: 'calc(50vw - 24px)' }}
+                            className="group shrink-0"
+                            style={{
+                                width: 'calc(70vw)',
+                                scrollSnapAlign: 'center'
+                            }}
                         >
                             <div className="relative h-56 sm:h-64 rounded-2xl overflow-hidden bg-gray-100 shadow-lg transition-all duration-300">
                                 <div className="absolute inset-0">
                                     {evento.imagen_url ? (
-                                        <img src={evento.imagen_url} alt={evento.nombre} className="w-full h-full object-cover" />
+                                        <Image src={evento.imagen_url} alt={evento.nombre} fill sizes="70vw" className="object-cover" />
                                     ) : (
                                         <div className="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
                                             <span className="text-white text-4xl">🎉</span>

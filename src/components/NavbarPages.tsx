@@ -1,22 +1,23 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useState, useRef, useEffect } from 'react';
-
-interface Evento {
-    id: string;
-    nombre: string;
-}
+import Link from "next/link";
+import { useState, useEffect } from "react";
 
 interface RedSocial {
     clave: string;
     valor: string;
 }
 
-interface NavbarProps {
-    eventos: Evento[];
+interface Evento {
+    id: string;
+    nombre: string;
+    imagen_url: string | null;
+}
+
+interface NavbarPagesProps {
     redesSociales?: RedSocial[];
-    variant?: 'transparent' | 'solid';
+    eventos?: Evento[];
+    activePage?: string;
 }
 
 const iconosRedesSociales: { [key: string]: React.ReactNode } = {
@@ -35,6 +36,11 @@ const iconosRedesSociales: { [key: string]: React.ReactNode } = {
             <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
         </svg>
     ),
+    twitter: (
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+        </svg>
+    ),
     youtube: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
@@ -47,22 +53,9 @@ const iconosRedesSociales: { [key: string]: React.ReactNode } = {
     ),
 };
 
-export default function Navbar({ eventos, redesSociales = [], variant = 'solid' }: NavbarProps) {
-    const [isServicesOpen, setIsServicesOpen] = useState(false);
+export default function NavbarPages({ redesSociales = [], eventos = [], activePage }: NavbarPagesProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [serviciosOpen, setServiciosOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-
-    // Cerrar dropdown al hacer click fuera
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsServicesOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
 
     // Bloquear scroll cuando el menú móvil está abierto
     useEffect(() => {
@@ -76,105 +69,92 @@ export default function Navbar({ eventos, redesSociales = [], variant = 'solid' 
         };
     }, [mobileMenuOpen]);
 
-    const isTransparent = variant === 'transparent';
-
     return (
         <>
-            <nav className={`flex items-center justify-between px-4 py-3 ${isTransparent ? 'absolute top-0 left-0 right-0 z-50' : 'py-4 lg:py-6 relative z-50'}`}>
-                {/* Botón hamburguesa - Móvil y Tablet */}
-                <button
-                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    className={`lg:hidden p-2 rounded-lg transition-colors ${isTransparent
-                        ? 'bg-white/20 backdrop-blur-sm'
-                        : 'hover:bg-gray-100'
-                        }`}
-                    aria-label="Menú principal"
-                >
-                    <svg className={`w-6 h-6 ${isTransparent ? 'text-white' : 'text-gray-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        {mobileMenuOpen ? (
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        ) : (
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                        )}
-                    </svg>
-                </button>
-
-                {/* Logo */}
-                <Link href="/" className={`flex flex-col items-center lg:items-start ${isTransparent ? '' : 'lg:flex-row lg:gap-2'}`}>
-                    <div className="flex items-center gap-2">
-                        <div className={`w-7 h-7 lg:w-8 lg:h-8 rounded-lg flex items-center justify-center ${isTransparent ? 'bg-white/25 backdrop-blur-sm' : 'bg-primary'
-                            }`}>
-                            <span className="text-white font-bold text-sm lg:text-lg">M</span>
-                        </div>
-                        <span className={`text-base lg:text-lg font-semibold ${isTransparent ? 'text-white' : 'text-gray-900'}`}>
-                            Maranatha
-                        </span>
-                    </div>
-                    {isTransparent && (
-                        <span className="text-[10px] text-white/70 tracking-wider">Eventos & Decoraciones</span>
-                    )}
-                </Link>
-
-                {/* Enlaces Desktop */}
-                <div className="hidden lg:flex items-center gap-6">
-                    {/* Servicios con dropdown en hover */}
-                    <div
-                        className="relative"
-                        ref={dropdownRef}
-                        onMouseEnter={() => setIsServicesOpen(true)}
-                        onMouseLeave={() => setIsServicesOpen(false)}
-                    >
-                        <Link href="/servicios" className="link-underline text-secondary-dark hover:text-primary font-medium text-sm transition-colors flex items-center gap-1">
-                            Servicios
-                            <svg
-                                className={`w-4 h-4 transition-transform ${isServicesOpen ? 'rotate-180' : ''}`}
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <nav className="bg-white shadow-sm border-b border-gray-100 relative z-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-16 md:h-20">
+                        {/* Hamburger Button Mobile */}
+                        <button
+                            className="md:hidden p-2 -ml-2 text-gray-600 hover:text-primary transition-colors"
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            aria-label="Menú"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
+                        </button>
+
+                        {/* Logo */}
+                        <Link href="/" className="flex items-center gap-2 md:gap-3 group">
+                            <div className="w-8 h-8 md:w-10 md:h-10 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary transition-all">
+                                <span className="text-primary font-bold text-lg md:text-xl group-hover:text-white transition-colors">M</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="font-bold text-gray-900 text-sm md:text-base">Maranatha</span>
+                                <span className="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-wide">Eventos & Decoración</span>
+                            </div>
                         </Link>
 
-                        {/* Dropdown de servicios */}
-                        {isServicesOpen && (
-                            <div className="absolute top-full left-0 pt-2 w-56 z-50">
-                                <div className="bg-white rounded-xl shadow-xl border border-gray-100 py-2">
-                                    {eventos.length > 0 ? (
-                                        eventos.map((evento) => (
-                                            <Link
-                                                key={evento.id}
-                                                href={`/servicios?evento=${evento.id}`}
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors"
-                                            >
+                        {/* Espaciador móvil */}
+                        <div className="w-10 md:hidden"></div>
+
+                        {/* Desktop Nav */}
+                        <div className="hidden md:flex items-center gap-8">
+                            <Link href="/" className={`text-sm font-medium hover:text-primary transition-colors ${activePage === 'home' ? 'text-primary' : 'text-gray-600'}`}>
+                                Inicio
+                            </Link>
+
+                            <div className="group relative">
+                                <Link href="/servicios" className={`text-sm font-medium flex items-center gap-1 hover:text-primary transition-colors ${activePage === 'servicios' ? 'text-primary' : 'text-gray-600'}`}>
+                                    Servicios
+                                    <svg className="w-4 h-4 group-hover:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </Link>
+
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all w-64">
+                                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-2">
+                                        {eventos.length > 0 ? eventos.map((evento) => (
+                                            <Link key={evento.id} href={`/servicios?evento=${evento.id}`} className="block px-4 py-3 rounded-xl hover:bg-gray-50 text-sm font-medium text-gray-700">
                                                 {evento.nombre}
                                             </Link>
-                                        ))
-                                    ) : (
-                                        <p className="px-4 py-2 text-sm text-gray-400">No hay servicios</p>
-                                    )}
+                                        )) : (
+                                            <div className="px-4 py-3 text-sm text-gray-400 text-center">No hay servicios</div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        )}
+
+                            <Link href="/contacto" className={`text-sm font-medium hover:text-primary transition-colors ${activePage === 'contacto' ? 'text-primary' : 'text-gray-600'}`}>
+                                Contacto
+                            </Link>
+                        </div>
+
+                        {/* Desktop Social Icons */}
+                        <div className="hidden md:flex items-center gap-2">
+                            {redesSociales.map((red) => {
+                                const icono = iconosRedesSociales[red.clave.toLowerCase()];
+                                if (!icono || !red.valor) return null;
+                                return (
+                                    <a key={red.clave} href={red.valor} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                                        {icono}
+                                    </a>
+                                );
+                            })}
+                        </div>
                     </div>
-
-                    <Link href="/contacto" className="link-underline text-secondary-dark hover:text-primary font-medium text-sm transition-colors">
-                        Contacto
-                    </Link>
                 </div>
-
-                {/* Espaciador móvil para centrar logo */}
-                <div className="w-10 lg:hidden"></div>
             </nav>
 
-            {/* Mobile Menu Overlay */}
+            {/* Mobile Overlay */}
             <div
-                className={`lg:hidden fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+                className={`md:hidden fixed inset-0 bg-black/50 z-40 transition-opacity ${mobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
                 onClick={() => setMobileMenuOpen(false)}
             />
 
-            {/* Mobile Menu Panel */}
-            <div className={`lg:hidden fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white z-50 shadow-2xl transform transition-transform duration-300 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            {/* Mobile Panel */}
+            <div className={`md:hidden fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white z-50 shadow-2xl transform transition-transform ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="flex flex-col h-full">
                     {/* Header */}
                     <div className="flex items-center justify-between p-4 border-b border-gray-100">
@@ -187,10 +167,7 @@ export default function Navbar({ eventos, redesSociales = [], variant = 'solid' 
                                 <span className="text-[10px] text-gray-500 uppercase tracking-wider">Eventos & Decoración</span>
                             </div>
                         </Link>
-                        <button
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
+                        <button onClick={() => setMobileMenuOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                             <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -200,11 +177,7 @@ export default function Navbar({ eventos, redesSociales = [], variant = 'solid' 
                     {/* Menu Items */}
                     <div className="flex-1 overflow-y-auto p-4">
                         {/* Inicio */}
-                        <Link
-                            href="/"
-                            className="flex items-center gap-3 py-3 text-gray-900 hover:text-primary border-b border-gray-100"
-                            onClick={() => setMobileMenuOpen(false)}
-                        >
+                        <Link href="/" className="flex items-center gap-3 py-3 text-gray-900 hover:text-primary border-b border-gray-100" onClick={() => setMobileMenuOpen(false)}>
                             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                                 <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -251,11 +224,7 @@ export default function Navbar({ eventos, redesSociales = [], variant = 'solid' 
                         </div>
 
                         {/* Contacto */}
-                        <Link
-                            href="/contacto"
-                            className="flex items-center gap-3 py-3 text-gray-900 hover:text-primary"
-                            onClick={() => setMobileMenuOpen(false)}
-                        >
+                        <Link href="/contacto" className="flex items-center gap-3 py-3 text-gray-900 hover:text-primary" onClick={() => setMobileMenuOpen(false)}>
                             <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
                                 <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -264,7 +233,7 @@ export default function Navbar({ eventos, redesSociales = [], variant = 'solid' 
                             <span className="font-medium">Contacto</span>
                         </Link>
 
-                        {/* Redes Sociales */}
+                        {/* Redes Sociales - Debajo de contacto con espacio */}
                         {redesSociales.length > 0 && (
                             <div className="mt-8 pt-6 border-t border-gray-100">
                                 <p className="text-xs text-gray-400 uppercase tracking-wider text-center mb-4">Síguenos</p>

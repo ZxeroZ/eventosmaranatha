@@ -15,12 +15,10 @@ export default function LoginPage() {
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        // Usamos FormData para asegurar que capturamos lo que el navegador rellenó
         const formData = new FormData(e.currentTarget);
         const emailInput = formData.get('email') as string;
         const passwordInput = formData.get('password') as string;
 
-        console.log("Intentando iniciar sesión con:", emailInput);
         setLoading(true);
         setError(null);
 
@@ -30,21 +28,19 @@ export default function LoginPage() {
                 password: passwordInput,
             });
 
-            console.log("Respuesta de Supabase:", { data, error });
-
             if (error) {
-                // Mensaje amigable si el error es "Email not confirmed"
                 if (error.message.includes("Email not confirmed")) {
-                    throw new Error("El correo no ha sido confirmado. Revisa tu consola de Supabase (Authentication -> Providers -> Email -> Confirm email: OFF) y crea el usuario de nuevo.");
+                    throw new Error("El correo no ha sido confirmado.");
+                }
+                if (error.message.includes("Invalid login credentials")) {
+                    throw new Error("Credenciales incorrectas.");
                 }
                 throw error;
             }
 
-            console.log("Login exitoso, redirigiendo...");
             router.push('/admin');
             router.refresh();
         } catch (err: any) {
-            console.error("Error capturado:", err);
             setError(err.message || 'Error al iniciar sesión');
         } finally {
             setLoading(false);
@@ -102,6 +98,7 @@ export default function LoginPage() {
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
                             </div>
+
                             <div>
                                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                                     Contraseña
