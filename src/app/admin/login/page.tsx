@@ -3,14 +3,13 @@
 import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Lock, Loader2, Mail, Eye, EyeOff } from 'lucide-react';
+import { Lock, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -49,100 +48,96 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-primary p-4">
-            {/* Fondo decorativo */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 rounded-full"></div>
-                <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-white/5 rounded-full"></div>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-fuchsia-900 px-4">
+            {/* Background Effects */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl"></div>
             </div>
 
-            {/* Card centrada */}
-            <div className="relative w-full max-w-sm">
-                {/* Logo / Header */}
-                <div className="text-center mb-8">
-                    <div className="w-20 h-20 bg-white rounded-2xl shadow-xl flex items-center justify-center mx-auto mb-4">
-                        <span className="text-primary text-3xl font-bold">M</span>
+            <div className="max-w-md w-full relative z-10">
+                <div className="bg-white/95 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/20">
+                    <div className="text-center mb-10">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 mb-6 shadow-lg shadow-indigo-500/30">
+                            <Lock className="w-8 h-8 text-white" />
+                        </div>
+                        <h2 className="text-3xl font-bold text-gray-900">Bienvenido</h2>
+                        <p className="mt-2 text-gray-500">Accede al panel de Eventos Maranatha</p>
                     </div>
-                    <h1 className="text-2xl font-bold text-white">Eventos Maranatha</h1>
-                    <p className="text-white/70 text-sm mt-1">Panel Administrativo</p>
-                </div>
 
-                {/* Formulario */}
-                <div className="bg-white rounded-2xl shadow-2xl p-6">
-                    <form className="space-y-4" onSubmit={handleLogin}>
+                    <form className="space-y-6" onSubmit={handleLogin}>
                         {error && (
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-600">
-                                {error}
+                            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-md">
+                                <div className="flex">
+                                    <div className="flex-shrink-0">
+                                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div className="ml-3">
+                                        <p className="text-sm text-red-700">{error}</p>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                                Correo
-                            </label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <div className="space-y-5">
+                            <div>
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Correo electrónico
+                                </label>
                                 <input
                                     id="email"
                                     name="email"
                                     type="email"
                                     autoComplete="email"
                                     required
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-                                    placeholder="tu@email.com"
+                                    className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 text-gray-900 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-gray-400"
+                                    placeholder="admin@maranatha.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
                             </div>
-                        </div>
 
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                                Contraseña
-                            </label>
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <div>
+                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Contraseña
+                                </label>
                                 <input
                                     id="password"
                                     name="password"
-                                    type={showPassword ? 'text' : 'password'}
+                                    type="password"
                                     autoComplete="current-password"
                                     required
-                                    className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                                    className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 text-gray-900 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-gray-400"
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                >
-                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                </button>
                             </div>
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full py-3 px-4 text-sm font-semibold rounded-lg text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
-                        >
-                            {loading ? (
-                                <div className="flex items-center justify-center gap-2">
-                                    <Loader2 className="animate-spin w-5 h-5" />
-                                    <span>Entrando...</span>
-                                </div>
-                            ) : (
-                                'Iniciar Sesión'
-                            )}
-                        </button>
+                        <div className="pt-2">
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full flex justify-center py-3.5 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/30 transition-all hover:-translate-y-0.5"
+                            >
+                                {loading ? (
+                                    <div className="flex items-center gap-2">
+                                        <Loader2 className="animate-spin w-5 h-5" />
+                                        <span>Iniciando sesión...</span>
+                                    </div>
+                                ) : (
+                                    'Acceder al Panel'
+                                )}
+                            </button>
+                        </div>
                     </form>
                 </div>
 
-                {/* Footer */}
-                <p className="text-center text-xs text-white/50 mt-6">
-                    © {new Date().getFullYear()} Eventos Maranatha
+                <p className="text-center text-indigo-200/60 mt-8 text-sm">
+                    &copy; {new Date().getFullYear()} Eventos Maranatha. Sistema seguro.
                 </p>
             </div>
         </div>
