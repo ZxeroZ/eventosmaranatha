@@ -95,13 +95,13 @@ export default function ConfiguracionPage() {
                 .from('configuracion')
                 .select('*')
                 .order('categoria', { ascending: true })
-                .order('clave', { ascending: true });
+                .order('clave', { ascending: true }) as any;
 
             if (error) throw error;
             setConfig(data || []);
 
             const initialData: Record<string, string> = {};
-            data?.forEach(item => {
+            data?.forEach((item: Configuracion) => {
                 initialData[item.id] = item.valor;
             });
             setFormData(initialData);
