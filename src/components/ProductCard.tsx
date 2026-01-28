@@ -12,7 +12,7 @@ interface Producto {
     destacado?: boolean;
     eventos?: {
         nombre: string;
-    };
+    } | null;
 }
 
 interface ProductCardProps {
