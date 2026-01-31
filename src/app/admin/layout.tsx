@@ -2,7 +2,7 @@
 
 import { supabase } from '@/lib/supabase/client';
 import { useRouter, usePathname } from 'next/navigation';
-import { LogOut, LayoutDashboard, Settings, Package, Calendar, Menu, X } from 'lucide-react';
+import { LogOut, LayoutDashboard, Settings, Package, Calendar, Menu, X, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -92,7 +92,16 @@ export default function AdminLayout({
                 </nav>
 
                 {/* Logout */}
-                <div className="p-4 border-t border-gray-100">
+                <div className="p-4 border-t border-gray-100 space-y-1">
+                    <Link
+                        href="/"
+                        target="_blank"
+                        className="flex items-center gap-3 w-full px-4 py-3 text-gray-600 rounded-xl hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                    >
+                        <ExternalLink className="w-5 h-5" />
+                        <span className="font-medium">Ver Tienda</span>
+                    </Link>
+
                     <button
                         onClick={handleLogout}
                         className="flex items-center gap-3 w-full px-4 py-3 text-red-600 rounded-xl hover:bg-red-50 transition-colors cursor-pointer"

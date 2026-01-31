@@ -98,12 +98,40 @@ export default function ConfiguracionPage() {
                 .order('clave', { ascending: true }) as any;
 
             if (error) throw error;
-            setConfig(data || []);
 
+            // Campos requeridos por defecto
+            const requiredFields = [
+                { clave: 'telefono', categoria: 'contacto', tipo: 'text' },
+                { clave: 'email', categoria: 'contacto', tipo: 'text' },
+                { clave: 'direccion', categoria: 'informacion', tipo: 'text' } // Ahora en informacion para balancear
+            ];
+
+            const combinedData = [...(data || [])];
             const initialData: Record<string, string> = {};
+
+            // Procesar datos existentes
             data?.forEach((item: Configuracion) => {
                 initialData[item.id] = item.valor;
             });
+
+            // Inyectar campos faltantes
+            requiredFields.forEach(field => {
+                if (!combinedData.some(item => item.clave === field.clave)) {
+                    const tempId = `new_${field.clave}`; // ID temporal
+                    combinedData.push({
+                        id: tempId,
+                        clave: field.clave,
+                        valor: '',
+                        categoria: field.categoria,
+                        tipo: field.tipo,
+                        mostrar: true,
+                        updated_at: new Date().toISOString()
+                    } as Configuracion);
+                    initialData[tempId] = '';
+                }
+            });
+
+            setConfig(combinedData);
             setFormData(initialData);
         } catch (error) {
             console.error('Error fetching config:', error);
@@ -123,16 +151,35 @@ export default function ConfiguracionPage() {
                 return;
             }
 
-            await Promise.all(updates.map(item =>
-                (supabase.from('configuracion') as any)
-                    .update({ valor: formData[item.id] })
-                    .eq('id', item.id)
-            ));
+            // Separar o diferenciar inserts de updates
+            const itemsToUpdate = updates.filter(item => !item.id.startsWith('new_'));
+            const itemsToInsert = updates.filter(item => item.id.startsWith('new_'));
 
-            setConfig(prev => prev.map(item => ({
-                ...item,
-                valor: formData[item.id] || item.valor
-            })));
+            // Ejecutar Updates
+            if (itemsToUpdate.length > 0) {
+                await Promise.all(itemsToUpdate.map(item =>
+                    (supabase.from('configuracion') as any)
+                        .update({ valor: formData[item.id] })
+                        .eq('id', item.id)
+                ));
+            }
+
+            // Ejecutar Inserts
+            if (itemsToInsert.length > 0) {
+                await Promise.all(itemsToInsert.map(item =>
+                    (supabase.from('configuracion') as any)
+                        .insert([{
+                            clave: item.clave,
+                            valor: formData[item.id],
+                            categoria: item.categoria,
+                            tipo: item.tipo,
+                            mostrar: true
+                        }])
+                ));
+            }
+
+            // Recargar todo para obtener IDs reales
+            await fetchConfig();
 
             showToast('Cambios guardados correctamente', 'success');
         } catch (error) {

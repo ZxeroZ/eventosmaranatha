@@ -28,7 +28,7 @@ export default function EventosPage() {
             const { data, error } = await supabase
                 .from('eventos')
                 .select('*')
-                .order('orden', { ascending: true });
+                .order('nombre', { ascending: true }) as any;
 
             if (error) throw error;
             setEventos(data || []);
@@ -48,7 +48,6 @@ export default function EventosPage() {
                 const updatePayload: Database['public']['Tables']['eventos']['Update'] = {
                     nombre: currentEvento.nombre,
                     descripcion: currentEvento.descripcion,
-                    orden: currentEvento.orden,
                     activo: currentEvento.activo,
                     imagen_url: currentEvento.imagen_url
                 };
@@ -61,7 +60,6 @@ export default function EventosPage() {
                 const insertPayload: Database['public']['Tables']['eventos']['Insert'] = {
                     nombre: currentEvento.nombre!,
                     descripcion: currentEvento.descripcion,
-                    orden: currentEvento.orden || 0,
                     activo: currentEvento.activo !== undefined ? currentEvento.activo : true,
                     imagen_url: currentEvento.imagen_url
                 };
@@ -105,7 +103,7 @@ export default function EventosPage() {
     }
 
     function openNew() {
-        setCurrentEvento({ activo: true, orden: 0 });
+        setCurrentEvento({ activo: true });
         setIsModalOpen(true);
     }
 

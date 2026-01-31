@@ -14,7 +14,7 @@ export default async function Home() {
     .from('eventos')
     .select('*')
     .eq('activo', true)
-    .order('orden', { ascending: true }) as any;
+    .order('nombre', { ascending: true }) as any;
 
   // Obtener productos activos con info del evento
   const { data: productos } = await supabase

@@ -32,8 +32,8 @@ export default function ProductosPage() {
     async function fetchData() {
         try {
             const [productosRes, eventosRes] = await Promise.all([
-                supabase.from('productos').select('*, eventos(nombre)').order('created_at', { ascending: false }),
-                supabase.from('eventos').select('*').eq('activo', true).order('orden', { ascending: true })
+                (supabase.from('productos').select('*, eventos(nombre)').order('created_at', { ascending: false }) as any),
+                (supabase.from('eventos').select('*').eq('activo', true).order('nombre', { ascending: true }) as any)
             ]);
 
             if (productosRes.error) throw productosRes.error;
@@ -41,8 +41,14 @@ export default function ProductosPage() {
 
             setProductos(productosRes.data || []);
             setEventos(eventosRes.data || []);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching data:', error);
+            console.error('Error details:', {
+                message: error?.message,
+                details: error?.details,
+                hint: error?.hint,
+                code: error?.code
+            });
             alert('Error al cargar datos');
         } finally {
             setLoading(false);
@@ -54,6 +60,11 @@ export default function ProductosPage() {
 
         if (!currentProducto.evento_id) {
             alert('Debes seleccionar un evento/categoría');
+            return;
+        }
+
+        if (!currentProducto.foto_principal) {
+            alert('Debes subir una imagen principal');
             return;
         }
 
@@ -104,7 +115,7 @@ export default function ProductosPage() {
 
         setDeleting(true);
         try {
-            const { error } = await supabase.from('productos').delete().eq('id', deleteModal.producto.id);
+            const { error } = await (supabase.from('productos') as any).delete().eq('id', deleteModal.producto.id);
             if (error) throw error;
             setDeleteModal({ open: false, producto: null });
             fetchData();
@@ -134,7 +145,7 @@ export default function ProductosPage() {
                 .from('galeria_fotos')
                 .select('*')
                 .eq('producto_id', productoId)
-                .order('orden', { ascending: true });
+                .order('orden', { ascending: true }) as any;
 
             if (error) throw error;
             setGaleria(data || []);
@@ -188,7 +199,7 @@ export default function ProductosPage() {
             const { error } = await supabase
                 .from('galeria_fotos')
                 .delete()
-                .eq('id', fotoId);
+                .eq('id', fotoId) as any;
 
             if (error) throw error;
             fetchGaleria(currentProducto.id);
