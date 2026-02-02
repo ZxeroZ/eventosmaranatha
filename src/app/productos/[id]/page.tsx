@@ -32,12 +32,15 @@ export default async function ProductPage({ params }: { params: { id: string } }
         .eq('activo', true)
         .order('orden', { ascending: true });
 
-    // Obtener redes sociales para el Footer
-    const { data: redesSociales } = await supabase
+    // Obtener configuración general
+    const { data: config } = await supabase
         .from('configuracion')
-        .select('clave, valor')
-        .eq('categoria', 'redes_sociales')
-        .eq('mostrar', true);
+        .select('clave, valor, categoria')
+        .eq('mostrar', true) as any;
+
+    const redesSociales = config?.filter((c: any) => c.categoria === 'redes_sociales') || [];
+    const telefono = config?.find((c: any) => c.clave === 'telefono')?.valor;
+    const direccion = config?.find((c: any) => c.clave === 'direccion')?.valor;
 
     const producto = productoData as unknown as ProductoWithEvento;
 
@@ -87,7 +90,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
             {/* Navbar en flujo normal (arriba del todo) */}
             <NavbarPages eventos={eventos || []} />
 
-            <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-0 sm:py-12">
+            <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 pt-20 pb-12 sm:pt-24 sm:pb-12">
                 {/* Grid Principal - items-stretch para igualar alturas */}
                 <div className="flex flex-col lg:grid lg:grid-cols-2 lg:gap-16 items-stretch">
                     {/* COLUMNA IZQUIERDA: GALERÍA */}
@@ -187,7 +190,12 @@ export default async function ProductPage({ params }: { params: { id: string } }
                 )}
             </div>
 
-            <Footer redesSociales={redesSociales || []} eventos={eventos || []} />
+            <Footer
+                redesSociales={redesSociales || []}
+                eventos={eventos || []}
+                direccion={direccion}
+                telefono={telefono}
+            />
         </div>
     );
 }

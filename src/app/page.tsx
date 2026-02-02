@@ -24,12 +24,15 @@ export default async function Home() {
     .order('created_at', { ascending: false })
     .limit(8) as any;
 
-  // Obtener redes sociales desde configuración
-  const { data: redesSociales } = await supabase
+  // Obtener configuración general (redes sociales, teléfono, dirección)
+  const { data: config } = await supabase
     .from('configuracion')
-    .select('clave, valor')
-    .eq('categoria', 'redes_sociales')
+    .select('clave, valor, categoria')
     .eq('mostrar', true) as any;
+
+  const redesSociales = config?.filter((c: any) => c.categoria === 'redes_sociales') || [];
+  const telefono = config?.find((c: any) => c.clave === 'telefono')?.valor;
+  const direccion = config?.find((c: any) => c.clave === 'direccion')?.valor;
 
   return (
     <div className="min-h-screen bg-white">
@@ -47,7 +50,7 @@ export default async function Home() {
               ]}
             />
             {/* Overlay sutil */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/20"></div>
+            <div className="absolute inset-0 bg-linear-to-b from-black/40 via-transparent to-black/20"></div>
           </div>
 
           {/* Navbar flotante transparente */}
@@ -190,7 +193,7 @@ export default async function Home() {
       </div>
 
       {/* Services Section */}
-      <section id="servicios" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+      <section id="servicios" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-8 sm:pb-10">
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4 relative inline-block">
             Nuestros <span className="text-primary">Servicios</span>
@@ -218,7 +221,7 @@ export default async function Home() {
       </section>
 
       {/* Products Section - Siempre visible */}
-      <section id="productos" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+      <section id="productos" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4 relative inline-block">
             Nuestras <span className="text-primary">Creaciones</span>
@@ -261,7 +264,7 @@ export default async function Home() {
       </section>
 
       {/* Galería Destacada - Momentos Inolvidables */}
-      <section className="bg-white py-16 sm:py-20">
+      <section className="bg-white py-8 sm:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-4 md:mb-6 relative inline-block">
@@ -273,7 +276,7 @@ export default async function Home() {
             </p>
           </div>
 
-          <div className="max-w-5xl mx-auto mb-20">
+          <div className="max-w-5xl mx-auto mb-8 sm:mb-10">
             {/* Galería Bento Responsive */}
             <div className="grid grid-cols-2 gap-4 h-[500px] sm:h-[600px]">
               {/* Imagen 1 (Blanco) -> Móvil: Pos 1 / Desktop: Pos 2 (Derecha Arriba) */}
@@ -311,7 +314,7 @@ export default async function Home() {
       </section>
 
       {/* Por Qué Elegirnos - Tarjetas Sutiles */}
-      <section className="bg-white pb-20">
+      <section className="bg-white pt-8 sm:pt-10 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-4 md:mb-6 relative inline-block">
@@ -367,7 +370,12 @@ export default async function Home() {
       </section>
 
       {/* Footer */}
-      <Footer redesSociales={redesSociales || []} eventos={eventos || []} />
+      <Footer
+        redesSociales={redesSociales}
+        eventos={eventos || []}
+        direccion={direccion}
+        telefono={telefono}
+      />
     </div>
   );
 }

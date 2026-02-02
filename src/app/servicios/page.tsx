@@ -27,14 +27,17 @@ export default async function ServiciosPage({ searchParams }: PageProps) {
         .from('eventos')
         .select('*')
         .eq('activo', true)
-        .order('orden', { ascending: true }) as { data: Evento[] | null };
+        .order('nombre', { ascending: true }) as { data: Evento[] | null };
 
-    // Obtener redes sociales para el footer
-    const { data: redesSociales } = await supabase
+    // Obtener configuración general
+    const { data: config } = await supabase
         .from('configuracion')
-        .select('clave, valor')
-        .eq('categoria', 'redes_sociales')
+        .select('clave, valor, categoria')
         .eq('mostrar', true) as any;
+
+    const redesSociales = config?.filter((c: any) => c.categoria === 'redes_sociales') || [];
+    const telefono = config?.find((c: any) => c.clave === 'telefono')?.valor;
+    const direccion = config?.find((c: any) => c.clave === 'direccion')?.valor;
 
     // Si hay un filtro de evento, obtener productos de ese evento
     let productos: any[] | null = null;
@@ -79,7 +82,7 @@ export default async function ServiciosPage({ searchParams }: PageProps) {
             {eventoFiltro && eventoActual ? (
                 <>
                     {/* Hero Section V4: Color Sólido con Imagen Decorativa */}
-                    <section className="relative bg-primary overflow-hidden">
+                    <section className="relative bg-primary overflow-hidden pt-20 md:pt-24">
                         {/* Patrón decorativo de fondo */}
                         <div className="absolute inset-0 opacity-10">
                             <div className="absolute top-0 left-0 w-full h-full" style={{
@@ -215,7 +218,7 @@ export default async function ServiciosPage({ searchParams }: PageProps) {
                 /* Vista de categorías/servicios (Sin cambios) */
                 <>
                     {/* Hero Section */}
-                    <section className="relative pt-6 pb-6 md:pt-12 md:pb-12 overflow-hidden">
+                    <section className="relative pt-24 pb-6 md:pt-32 md:pb-12 overflow-hidden">
                         {/* Background con gradiente y patrón */}
                         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-white to-pink-50/50" />
                         <div className="absolute inset-0 opacity-30">
@@ -326,7 +329,12 @@ export default async function ServiciosPage({ searchParams }: PageProps) {
             )}
 
             {/* Footer */}
-            <Footer redesSociales={redesSociales || []} eventos={eventos || []} />
+            <Footer
+                redesSociales={redesSociales}
+                eventos={eventos || []}
+                direccion={direccion}
+                telefono={telefono}
+            />
         </div>
     );
 }

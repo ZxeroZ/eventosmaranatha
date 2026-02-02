@@ -71,7 +71,7 @@ export default function NavbarPages({ redesSociales = [], eventos = [], activePa
 
     return (
         <>
-            <nav className="bg-white shadow-sm border-b border-gray-100 relative z-50">
+            <nav className="fixed top-0 left-0 right-0 w-full bg-white shadow-sm border-b border-gray-100 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16 md:h-20">
                         {/* Hamburger Button Mobile */}
@@ -101,12 +101,12 @@ export default function NavbarPages({ redesSociales = [], eventos = [], activePa
 
                         {/* Desktop Nav */}
                         <div className="hidden md:flex items-center gap-8">
-                            <Link href="/" className={`text-sm font-medium hover:text-primary transition-colors ${activePage === 'home' ? 'text-primary' : 'text-gray-600'}`}>
+                            <Link href="/" className={`text-sm font-medium link-underline transition-colors ${activePage === 'home' ? 'text-primary' : 'text-gray-600 hover:text-primary'}`}>
                                 Inicio
                             </Link>
 
                             <div className="group relative">
-                                <Link href="/servicios" className={`text-sm font-medium flex items-center gap-1 hover:text-primary transition-colors ${activePage === 'servicios' ? 'text-primary' : 'text-gray-600'}`}>
+                                <Link href="/servicios" className={`text-sm font-medium link-underline flex items-center gap-1 transition-colors ${activePage === 'servicios' ? 'text-primary' : 'text-gray-600 hover:text-primary'}`}>
                                     Servicios
                                     <svg className="w-4 h-4 group-hover:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -126,7 +126,7 @@ export default function NavbarPages({ redesSociales = [], eventos = [], activePa
                                 </div>
                             </div>
 
-                            <Link href="/contacto" className={`text-sm font-medium hover:text-primary transition-colors ${activePage === 'contacto' ? 'text-primary' : 'text-gray-600'}`}>
+                            <Link href="/contacto" className={`text-sm font-medium link-underline transition-colors ${activePage === 'contacto' ? 'text-primary' : 'text-gray-600 hover:text-primary'}`}>
                                 Contacto
                             </Link>
                         </div>
