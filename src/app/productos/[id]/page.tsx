@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import ProductGallery from '@/components/ProductGallery';
@@ -14,6 +15,33 @@ type ProductoWithEvento = Database['public']['Tables']['productos']['Row'] & {
     eventos: { nombre: string } | null;
 };
 type GaleriaFoto = Database['public']['Tables']['galeria_fotos']['Row'];
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+    const supabase = await createClient();
+    const { id } = await params;
+
+    const { data: producto } = await supabase
+        .from('productos')
+        .select('titulo, descripcion, foto_principal')
+        .eq('id', id)
+        .single() as any;
+
+    if (!producto) {
+        return {
+            title: 'Producto no encontrado | Eventos Maranatha',
+        }
+    }
+
+    return {
+        title: `${producto.titulo} | Eventos Maranatha`,
+        description: producto.descripcion || 'Decoración exclusiva y organización de eventos.',
+        openGraph: {
+            title: producto.titulo,
+            description: producto.descripcion || 'Decoración exclusiva y organización de eventos.',
+            images: producto.foto_principal ? [{ url: producto.foto_principal }] : [],
+        },
+    }
+}
 
 export default async function ProductPage({ params }: { params: { id: string } }) {
     const supabase = await createClient();

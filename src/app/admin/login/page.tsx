@@ -3,7 +3,7 @@
 import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Lock, Loader2 } from 'lucide-react';
+import { Loader2, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -48,42 +48,39 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-fuchsia-900 px-4">
-            {/* Background Effects */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl"></div>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden px-4">
+            {/* Background Gradients similar to Contact/Home */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-white to-pink-50/50" />
+            <div className="absolute inset-0 opacity-30 pointer-events-none">
+                <div className="absolute top-20 left-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-300/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
             </div>
 
             <div className="max-w-md w-full relative z-10">
-                <div className="bg-white/95 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/20">
-                    <div className="text-center mb-10">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 mb-6 shadow-lg shadow-indigo-500/30">
-                            <Lock className="w-8 h-8 text-white" />
-                        </div>
-                        <h2 className="text-3xl font-bold text-gray-900">Bienvenido</h2>
-                        <p className="mt-2 text-gray-500">Accede al panel de Eventos Maranatha</p>
+                <div className="text-center mb-8">
+                    <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-3xl shadow-xl shadow-pink-100 mb-6 group transform transition-transform hover:scale-110 duration-500">
+                        <span className="text-4xl font-bold text-primary group-hover:rotate-12 transition-transform duration-500">M</span>
                     </div>
+                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Bienvenido</h2>
+                    <p className="mt-3 text-gray-500 font-medium">Panel de Administración Maranatha</p>
+                </div>
 
+                <div className="bg-white p-8 md:p-10 rounded-3xl shadow-2xl shadow-gray-200/50 border border-gray-100 backdrop-blur-sm">
                     <form className="space-y-6" onSubmit={handleLogin}>
                         {error && (
-                            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-md">
-                                <div className="flex">
-                                    <div className="flex-shrink-0">
-                                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div className="ml-3">
-                                        <p className="text-sm text-red-700">{error}</p>
-                                    </div>
+                            <div className="bg-red-50 border border-red-100 p-4 rounded-2xl flex items-start gap-3">
+                                <div className="shrink-0 text-red-500 mt-0.5">
+                                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    </svg>
                                 </div>
+                                <p className="text-sm font-medium text-red-600">{error}</p>
                             </div>
                         )}
 
                         <div className="space-y-5">
-                            <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                            <div className="space-y-2">
+                                <label htmlFor="email" className="text-sm font-bold text-gray-700 uppercase tracking-wide ml-1">
                                     Correo electrónico
                                 </label>
                                 <input
@@ -92,15 +89,15 @@ export default function LoginPage() {
                                     type="email"
                                     autoComplete="email"
                                     required
-                                    className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 text-gray-900 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-gray-400"
+                                    className="block w-full px-5 py-4 bg-gray-50 border border-gray-200 text-gray-900 rounded-xl focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-gray-400 font-medium"
                                     placeholder="admin@maranatha.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
                             </div>
 
-                            <div>
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                            <div className="space-y-2">
+                                <label htmlFor="password" className="text-sm font-bold text-gray-700 uppercase tracking-wide ml-1">
                                     Contraseña
                                 </label>
                                 <input
@@ -109,7 +106,7 @@ export default function LoginPage() {
                                     type="password"
                                     autoComplete="current-password"
                                     required
-                                    className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 text-gray-900 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-gray-400"
+                                    className="block w-full px-5 py-4 bg-gray-50 border border-gray-200 text-gray-900 rounded-xl focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-gray-400 font-medium"
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
@@ -121,23 +118,26 @@ export default function LoginPage() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full flex justify-center py-3.5 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/30 transition-all hover:-translate-y-0.5"
+                                className="group w-full flex items-center justify-center gap-2 py-4 px-6 border border-transparent text-base font-bold rounded-xl text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-4 focus:ring-primary/20 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all hover:-translate-y-0.5"
                             >
                                 {loading ? (
-                                    <div className="flex items-center gap-2">
+                                    <>
                                         <Loader2 className="animate-spin w-5 h-5" />
-                                        <span>Iniciando sesión...</span>
-                                    </div>
+                                        <span>Iniciando...</span>
+                                    </>
                                 ) : (
-                                    'Acceder al Panel'
+                                    <>
+                                        <span>Ingresar</span>
+                                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                    </>
                                 )}
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <p className="text-center text-indigo-200/60 mt-8 text-sm">
-                    &copy; {new Date().getFullYear()} Eventos Maranatha. Sistema seguro.
+                <p className="text-center text-gray-400 mt-8 text-xs font-medium uppercase tracking-widest">
+                    &copy; {new Date().getFullYear()} Eventos Maranatha
                 </p>
             </div>
         </div>
