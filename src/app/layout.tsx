@@ -51,9 +51,52 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Eventos Maranatha",
+    "image": "https://maranatha-eventos.vercel.app/img/mesas.jpeg",
+    "description": "Decoración de eventos, toldos, alquiler de menajería y servicio de mozos para bodas, cumpleaños y eventos corporativos en Chiclayo, Perú.",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Chiclayo",
+      "addressRegion": "Lambayeque",
+      "addressCountry": "PE"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": -6.7714,
+      "longitude": -79.8411
+    },
+    "url": "https://www.maranathaeventos.com",
+    "telephone": "+51999999999",
+    "priceRange": "$$",
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+      ],
+      "opens": "09:00",
+      "closes": "18:00"
+    },
+    "sameAs": [
+      "https://www.facebook.com/maranathaeventos",
+      "https://www.instagram.com/maranathaeventos"
+    ]
+  };
+
   return (
     <html lang="es">
       <body className={`${roboto.className} antialiased`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+        />
         {children}
       </body>
     </html>

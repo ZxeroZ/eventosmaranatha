@@ -120,8 +120,70 @@ export default async function ProductPage({ params }: { params: { id: string } }
         { label: producto.titulo, current: true }
     ];
 
+    // Schema.org JSON-LD for SEO
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://maranatha-eventos.vercel.app';
+
+    const productSchema = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": producto.titulo,
+        "description": producto.descripcion || "Decoración exclusiva para eventos",
+        "image": producto.foto_principal || `${baseUrl}/img/mesas.jpeg`,
+        "brand": {
+            "@type": "Brand",
+            "name": "Eventos Maranatha"
+        },
+        "offers": {
+            "@type": "Offer",
+            "availability": "https://schema.org/InStock",
+            "priceCurrency": "PEN",
+            "url": `${baseUrl}/productos/${id}`
+        }
+    };
+
+    const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Inicio",
+                "item": baseUrl
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Servicios",
+                "item": `${baseUrl}/servicios`
+            },
+            ...(producto.eventos ? [{
+                "@type": "ListItem",
+                "position": 3,
+                "name": producto.eventos.nombre,
+                "item": `${baseUrl}/servicios?evento=${producto.evento_id}`
+            }] : []),
+            {
+                "@type": "ListItem",
+                "position": producto.eventos ? 4 : 3,
+                "name": producto.titulo,
+                "item": `${baseUrl}/productos/${id}`
+            }
+        ]
+    };
+
     return (
         <div className="min-h-screen bg-white">
+            {/* Schema.org JSON-LD */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+            />
+
             {/* Navbar en flujo normal (arriba del todo) */}
             <NavbarPages eventos={eventos || []} />
 

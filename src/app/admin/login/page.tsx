@@ -48,33 +48,34 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden px-4">
-            {/* Background Gradients similar to Contact/Home */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-white to-pink-50/50" />
-            <div className="absolute inset-0 opacity-30 pointer-events-none">
-                <div className="absolute top-20 left-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-                <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-300/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-primary/5 relative overflow-hidden px-4">
+            {/* Decorative background elements */}
+            <div className="absolute inset-0 opacity-20 pointer-events-none">
+                <div className="absolute top-20 left-10 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute bottom-20 right-10 w-80 h-80 bg-pink-300/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
             </div>
 
             <div className="max-w-md w-full relative z-10">
+                {/* Logo and Title */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-3xl shadow-xl shadow-pink-100 mb-6 group transform transition-transform hover:scale-110 duration-500">
-                        <span className="text-4xl font-bold text-primary group-hover:rotate-12 transition-transform duration-500">M</span>
+                    <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary to-primary-dark rounded-3xl shadow-xl shadow-primary/30 mb-6 group transform transition-transform hover:scale-110 duration-500">
+                        <span className="text-4xl font-bold text-white group-hover:rotate-12 transition-transform duration-500">M</span>
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Bienvenido</h2>
-                    <p className="mt-3 text-gray-500 font-medium">Panel de Administración Maranatha</p>
+                    <p className="mt-3 text-gray-500 font-medium">Panel de Administración</p>
                 </div>
 
-                <div className="bg-white p-8 md:p-10 rounded-3xl shadow-2xl shadow-gray-200/50 border border-gray-100 backdrop-blur-sm">
+                {/* Login Card */}
+                <div className="bg-white/80 backdrop-blur-xl p-8 md:p-10 rounded-3xl shadow-2xl shadow-gray-200/50 border border-white/50">
                     <form className="space-y-6" onSubmit={handleLogin}>
                         {error && (
-                            <div className="bg-red-50 border border-red-100 p-4 rounded-2xl flex items-start gap-3">
+                            <div className="bg-red-50 border border-red-200 p-4 rounded-2xl flex items-start gap-3">
                                 <div className="shrink-0 text-red-500 mt-0.5">
                                     <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                     </svg>
                                 </div>
-                                <p className="text-sm font-medium text-red-600">{error}</p>
+                                <p className="text-sm font-medium text-red-700">{error}</p>
                             </div>
                         )}
 
@@ -89,7 +90,7 @@ export default function LoginPage() {
                                     type="email"
                                     autoComplete="email"
                                     required
-                                    className="block w-full px-5 py-4 bg-gray-50 border border-gray-200 text-gray-900 rounded-xl focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-gray-400 font-medium"
+                                    className="block w-full px-5 py-4 bg-gray-50/50 border border-gray-200 text-gray-900 rounded-xl focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-gray-400 font-medium"
                                     placeholder="admin@maranatha.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -106,7 +107,7 @@ export default function LoginPage() {
                                     type="password"
                                     autoComplete="current-password"
                                     required
-                                    className="block w-full px-5 py-4 bg-gray-50 border border-gray-200 text-gray-900 rounded-xl focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-gray-400 font-medium"
+                                    className="block w-full px-5 py-4 bg-gray-50/50 border border-gray-200 text-gray-900 rounded-xl focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-gray-400 font-medium"
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
@@ -118,7 +119,7 @@ export default function LoginPage() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="group w-full flex items-center justify-center gap-2 py-4 px-6 border border-transparent text-base font-bold rounded-xl text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-4 focus:ring-primary/20 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all hover:-translate-y-0.5"
+                                className="group w-full flex items-center justify-center gap-2 py-4 px-6 border border-transparent text-base font-bold rounded-xl text-white bg-gradient-to-r from-primary to-primary-dark hover:shadow-xl hover:shadow-primary/30 focus:outline-none focus:ring-4 focus:ring-primary/20 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg transition-all hover:-translate-y-0.5 duration-300"
                             >
                                 {loading ? (
                                     <>
