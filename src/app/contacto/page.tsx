@@ -36,7 +36,7 @@ export default async function ContactoPage() {
         .select('clave, valor, categoria')
         .eq('mostrar', true) as any;
 
-    const redesSociales = config?.filter((c: any) => c.categoria === 'redes_sociales') || [];
+    const redesSociales = (config?.filter((c: any) => c.categoria === 'redes_sociales') || []) as ConfigItem[];
     const telefono = config?.find((c: any) => c.clave === 'telefono')?.valor;
     const direccion = config?.find((c: any) => c.clave === 'direccion')?.valor;
     const email = config?.find((c: any) => c.clave === 'email')?.valor;
@@ -254,7 +254,7 @@ export default async function ContactoPage() {
             </div>
 
             <Footer
-                redesSociales={redesSociales}
+                redesSociales={redesSocialesProp}
                 eventos={eventos || []}
                 direccion={direccion}
                 telefono={telefono}
