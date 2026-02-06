@@ -50,7 +50,7 @@ export default async function ContactoPage() {
         .from('eventos')
         .select('id, nombre, imagen_url')
         .eq('activo', true)
-        .order('orden', { ascending: true });
+        .order('nombre', { ascending: true });
 
     const eventos = (eventosRaw || []) as Evento[];
 

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Lock } from 'lucide-react';
 
 interface Evento {
     id: string;
@@ -196,10 +197,13 @@ export default function Footer({ redesSociales = [], eventos = [], direccion, te
 
                 {/* Barra inferior */}
                 <div className="border-t border-white/10">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex items-center justify-center gap-2">
                         <p className="text-center text-white/50 text-xs">
                             © {new Date().getFullYear()} Eventos Maranatha · Todos los derechos reservados
                         </p>
+                        <Link href="/admin" className="text-white/10 hover:text-white/50 transition-colors p-1" aria-label="Admin Access">
+                            <Lock className="w-3 h-3" />
+                        </Link>
                     </div>
                 </div>
             </div>

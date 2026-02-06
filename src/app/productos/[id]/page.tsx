@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import ProductGallery from '@/components/ProductGallery';
 import ProductCard from '@/components/ProductCard';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { MessageCircle, ShieldCheck, Palette } from 'lucide-react';
 import { Database } from '@/types/database';
 import NavbarPages from "@/components/NavbarPages";
@@ -58,7 +59,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
         .from('eventos')
         .select('*')
         .eq('activo', true)
-        .order('orden', { ascending: true });
+        .order('nombre', { ascending: true });
 
     // Obtener configuración general
     const { data: config } = await supabase
@@ -80,7 +81,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
         .from('galeria_fotos')
         .select('*')
         .eq('producto_id', id)
-        .order('orden', { ascending: true });
+        .order('created_at', { ascending: true });
 
     const galeriaAdicional = galeriaData as GaleriaFoto[] | null;
 
@@ -113,12 +114,23 @@ export default async function ProductPage({ params }: { params: { id: string } }
     const whatsappMessage = encodeURIComponent(`Hola, me interesa más información sobre: ${producto.titulo}`);
     const whatsappUrl = `https://wa.me/51999999999?text=${whatsappMessage}`;
 
+    const breadcrumbItems = [
+        { label: 'Servicios', href: '/servicios' },
+        ...(producto.eventos ? [{ label: producto.eventos.nombre, href: `/servicios?evento=${producto.evento_id}` }] : []),
+        { label: producto.titulo, current: true }
+    ];
+
     return (
         <div className="min-h-screen bg-white">
             {/* Navbar en flujo normal (arriba del todo) */}
             <NavbarPages eventos={eventos || []} />
 
-            <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 pt-20 pb-12 sm:pt-24 sm:pb-12">
+            <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 pt-16 pb-12 sm:pt-24 sm:pb-12">
+
+                <div className="px-6 sm:px-0">
+                    <Breadcrumbs items={breadcrumbItems} />
+                </div>
+
                 {/* Grid Principal - items-stretch para igualar alturas */}
                 <div className="flex flex-col lg:grid lg:grid-cols-2 lg:gap-16 items-stretch">
                     {/* COLUMNA IZQUIERDA: GALERÍA */}

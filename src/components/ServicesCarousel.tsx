@@ -38,7 +38,7 @@ export default function ServicesCarousel({ eventos }: ServicesCarouselProps) {
     // Renderizar tarjeta individual
     const renderCard = (evento: Evento, index: number) => (
         <Link
-            href={`/eventos/${evento.id}`}
+            href={`/servicios?evento=${evento.id}`}
             key={`${evento.id}-${index}`}
             className="group flex-shrink-0 w-[280px] lg:w-[300px]"
         >
@@ -77,7 +77,7 @@ export default function ServicesCarousel({ eventos }: ServicesCarouselProps) {
                 >
                     {eventos.map((evento, index) => (
                         <Link
-                            href={`/eventos/${evento.id}`}
+                            href={`/servicios?evento=${evento.id}`}
                             key={`mobile-${evento.id}-${index}`}
                             className="group shrink-0"
                             style={{
@@ -129,7 +129,7 @@ export default function ServicesCarousel({ eventos }: ServicesCarouselProps) {
                                 }
                             }
                             .animate-scroll {
-                                animation: scroll 30s linear infinite;
+                                animation: scroll 40s linear infinite;
                             }
                             .animate-scroll:hover {
                                 animation-play-state: paused;

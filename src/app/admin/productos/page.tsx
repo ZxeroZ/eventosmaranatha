@@ -145,7 +145,7 @@ export default function ProductosPage() {
                 .from('galeria_fotos')
                 .select('*')
                 .eq('producto_id', productoId)
-                .order('orden', { ascending: true }) as any;
+                .order('created_at', { ascending: true }) as any;
 
             if (error) throw error;
             setGaleria(data || []);
