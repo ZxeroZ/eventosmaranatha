@@ -9,7 +9,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.maranathaeventos.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://maranatha-eventos.vercel.app'),
   title: "Eventos Maranatha | Decoración y Servicios para Eventos en Chiclayo",
   description: "Maranatha Eventos en Chiclayo, Perú. Decoración de eventos, toldos, alquiler de menajería y servicio de mozos para bodas, cumpleaños y eventos corporativos.",
   keywords: ["Maranatha Eventos Chiclayo", "decoración de eventos Chiclayo", "toldos para eventos Chiclayo", "alquiler de menajes Chiclayo", "servicio de mozos Chiclayo", "bodas Chiclayo"],
