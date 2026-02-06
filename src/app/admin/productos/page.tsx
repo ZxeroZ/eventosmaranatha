@@ -3,7 +3,7 @@
 import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/types/database';
 import { useEffect, useState, useRef } from 'react';
-import { Plus, Pencil, Trash2, X, Loader2, Package, Upload, Star, Images } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Loader2, Package, Upload, Star, Images, Search, Filter } from 'lucide-react';
 import Image from 'next/image';
 
 type Producto = Database['public']['Tables']['productos']['Row'];
@@ -24,6 +24,10 @@ export default function ProductosPage() {
     const [uploadingGaleria, setUploadingGaleria] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const galeriaInputRef = useRef<HTMLInputElement>(null);
+
+    // Search and filter states
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedEvento, setSelectedEvento] = useState<string>('all');
 
     useEffect(() => {
         fetchData();
@@ -216,13 +220,38 @@ export default function ProductosPage() {
         );
     }
 
+    // Filter products based on search and selected evento
+    const filteredProductos = productos.filter((producto: any) => {
+        const matchesSearch = producto.titulo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            producto.descripcion?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesEvento = selectedEvento === 'all' || producto.evento_id === selectedEvento;
+        return matchesSearch && matchesEvento;
+    });
+
+    // Group filtered products by evento
+    const productosPorEvento = filteredProductos.reduce((acc: any, producto: any) => {
+        const eventoId = producto.evento_id || 'sin-categoria';
+        const eventoNombre = producto.eventos?.nombre || 'Sin categoría';
+
+        if (!acc[eventoId]) {
+            acc[eventoId] = {
+                nombre: eventoNombre,
+                productos: []
+            };
+        }
+        acc[eventoId].productos.push(producto);
+        return acc;
+    }, {});
+
     return (
         <div className="space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Productos</h1>
-                    <p className="text-gray-500 text-sm mt-1">{productos.length} producto{productos.length !== 1 ? 's' : ''} en total</p>
+                    <p className="text-gray-500 text-sm mt-1">
+                        {filteredProductos.length} de {productos.length} producto{productos.length !== 1 ? 's' : ''}
+                    </p>
                 </div>
                 <button
                     onClick={openNew}
@@ -233,89 +262,156 @@ export default function ProductosPage() {
                 </button>
             </div>
 
-            {/* Tabla */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-50 border-b border-gray-100">
-                            <tr>
-                                <th className="p-4 font-semibold text-gray-600 text-sm">Producto</th>
-                                <th className="p-4 font-semibold text-gray-600 text-sm">Categoría</th>
-                                <th className="p-4 font-semibold text-gray-600 text-sm">Estado</th>
-                                <th className="p-4 font-semibold text-gray-600 text-sm text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {productos.map((producto: any) => (
-                                <tr key={producto.id} className="hover:bg-gray-50/50 transition-colors">
-                                    <td className="p-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 relative shrink-0">
-                                                {producto.foto_principal ? (
-                                                    <Image
-                                                        src={producto.foto_principal}
-                                                        alt={producto.titulo}
-                                                        fill
-                                                        sizes="48px"
-                                                        className="object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                        <Package size={20} />
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <p className="font-medium text-gray-900">{producto.titulo}</p>
-                                                {producto.destacado && (
-                                                    <span className="inline-flex items-center gap-1 text-xs text-amber-600 mt-0.5">
-                                                        <Star size={12} fill="currentColor" />
-                                                        Destacado
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="p-4">
-                                        <span className="text-gray-600 text-sm">{producto.eventos?.nombre || 'Sin categoría'}</span>
-                                    </td>
-                                    <td className="p-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${producto.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                                            {producto.activo ? 'Activo' : 'Inactivo'}
-                                        </span>
-                                    </td>
-                                    <td className="p-4 text-right">
-                                        <div className="flex items-center justify-end gap-1">
-                                            <button
-                                                onClick={() => openEdit(producto)}
-                                                className="p-2 text-gray-500 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"
-                                                title="Editar"
-                                            >
-                                                <Pencil size={18} />
-                                            </button>
-                                            <button
-                                                onClick={() => setDeleteModal({ open: true, producto })}
-                                                className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                                                title="Eliminar"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+            {/* Search and Filters */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                <div className="flex flex-col sm:flex-row gap-3">
+                    {/* Search Bar */}
+                    <div className="flex-1 relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Buscar productos..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        />
+                    </div>
+
+                    {/* Category Filter */}
+                    <div className="sm:w-64 relative">
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                        <select
+                            value={selectedEvento}
+                            onChange={(e) => setSelectedEvento(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none bg-white cursor-pointer"
+                        >
+                            <option value="all">Todas las categorías</option>
+                            {eventos.map((evento) => (
+                                <option key={evento.id} value={evento.id}>
+                                    {evento.nombre}
+                                </option>
                             ))}
-                            {productos.length === 0 && (
-                                <tr>
-                                    <td colSpan={4} className="p-12 text-center">
-                                        <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                                        <p className="text-gray-500 font-medium">No hay productos</p>
-                                        <p className="text-gray-400 text-sm mt-1">Crea tu primer producto</p>
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            <option value="sin-categoria">Sin categoría</option>
+                        </select>
+                    </div>
+
+                    {/* Clear Filters Button */}
+                    {(searchQuery || selectedEvento !== 'all') && (
+                        <button
+                            onClick={() => {
+                                setSearchQuery('');
+                                setSelectedEvento('all');
+                            }}
+                            className="px-4 py-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors text-sm font-medium"
+                        >
+                            Limpiar
+                        </button>
+                    )}
                 </div>
+            </div>
+
+            {/* Products grouped by category */}
+            <div className="space-y-4">
+                {Object.entries(productosPorEvento).map(([eventoId, grupo]: [string, any]) => (
+                    <div key={eventoId} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        {/* Category Header */}
+                        <div className="bg-gradient-to-r from-primary/5 to-primary/10 px-5 py-4 border-b border-gray-100">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                                        <Package className="w-5 h-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <h2 className="font-bold text-gray-900">{grupo.nombre}</h2>
+                                        <p className="text-sm text-gray-500">{grupo.productos.length} producto{grupo.productos.length !== 1 ? 's' : ''}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Products Table */}
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-gray-50 border-b border-gray-100">
+                                    <tr>
+                                        <th className="p-4 font-semibold text-gray-600 text-sm">Producto</th>
+                                        <th className="p-4 font-semibold text-gray-600 text-sm">Estado</th>
+                                        <th className="p-4 font-semibold text-gray-600 text-sm text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {grupo.productos.map((producto: any) => (
+                                        <tr key={producto.id} className="hover:bg-gray-50/50 transition-colors">
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 relative shrink-0">
+                                                        {producto.foto_principal ? (
+                                                            <Image
+                                                                src={producto.foto_principal}
+                                                                alt={producto.titulo}
+                                                                fill
+                                                                sizes="48px"
+                                                                className="object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                                <Package size={20} />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-medium text-gray-900">{producto.titulo}</p>
+                                                        {producto.destacado && (
+                                                            <span className="inline-flex items-center gap-1 text-xs text-amber-600 mt-0.5">
+                                                                <Star size={12} fill="currentColor" />
+                                                                Destacado
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="p-4">
+                                                <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${producto.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                    {producto.activo ? 'Activo' : 'Inactivo'}
+                                                </span>
+                                            </td>
+                                            <td className="p-4 text-right">
+                                                <div className="flex items-center justify-end gap-1">
+                                                    <button
+                                                        onClick={() => openEdit(producto)}
+                                                        className="p-2 text-gray-500 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors cursor-pointer"
+                                                        title="Editar"
+                                                    >
+                                                        <Pencil size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setDeleteModal({ open: true, producto })}
+                                                        className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                                        title="Eliminar"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                ))}
+
+                {filteredProductos.length === 0 && (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+                        <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                        <p className="text-gray-500 font-medium">
+                            {searchQuery || selectedEvento !== 'all' ? 'No se encontraron productos' : 'No hay productos'}
+                        </p>
+                        <p className="text-gray-400 text-sm mt-1">
+                            {searchQuery || selectedEvento !== 'all' ? 'Intenta con otros filtros' : 'Crea tu primer producto'}
+                        </p>
+                    </div>
+                )}
             </div>
 
             {/* Modal de crear/editar */}
@@ -561,48 +657,51 @@ export default function ProductosPage() {
                         </form>
                     </div>
                 </div>
-            )}
+            )
+            }
 
             {/* Modal de confirmación de eliminación */}
-            {deleteModal.open && deleteModal.producto && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
-                        <div className="p-6 text-center">
-                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Trash2 className="w-8 h-8 text-red-500" />
-                            </div>
+            {
+                deleteModal.open && deleteModal.producto && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+                            <div className="p-6 text-center">
+                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Trash2 className="w-8 h-8 text-red-500" />
+                                </div>
 
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">
-                                ¿Eliminar producto?
-                            </h3>
+                                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                                    ¿Eliminar producto?
+                                </h3>
 
-                            <p className="text-gray-500 text-sm mb-6">
-                                Estás por eliminar <span className="font-semibold text-gray-700">{deleteModal.producto.titulo}</span>
-                            </p>
+                                <p className="text-gray-500 text-sm mb-6">
+                                    Estás por eliminar <span className="font-semibold text-gray-700">{deleteModal.producto.titulo}</span>
+                                </p>
 
-                            <div className="flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setDeleteModal({ open: false, producto: null })}
-                                    disabled={deleting}
-                                    className="flex-1 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl border border-gray-200 font-medium transition-colors cursor-pointer"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={handleDelete}
-                                    disabled={deleting}
-                                    className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
-                                >
-                                    {deleting && <Loader2 className="animate-spin w-4 h-4" />}
-                                    {deleting ? 'Eliminando...' : 'Eliminar'}
-                                </button>
+                                <div className="flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setDeleteModal({ open: false, producto: null })}
+                                        disabled={deleting}
+                                        className="flex-1 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl border border-gray-200 font-medium transition-colors cursor-pointer"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleDelete}
+                                        disabled={deleting}
+                                        className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
+                                    >
+                                        {deleting && <Loader2 className="animate-spin w-4 h-4" />}
+                                        {deleting ? 'Eliminando...' : 'Eliminar'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
