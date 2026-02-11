@@ -100,19 +100,27 @@ export default function Navbar({ eventos, redesSociales = [], variant = 'solid' 
                 </button>
 
                 {/* Logo */}
-                <Link href="/" className={`flex flex-col items-center lg:items-start ${isTransparent ? '' : 'lg:flex-row lg:gap-2'}`}>
-                    <div className="flex items-center gap-2">
-                        <div className={`w-7 h-7 lg:w-8 lg:h-8 rounded-lg flex items-center justify-center ${isTransparent ? 'bg-white/25 backdrop-blur-sm' : 'bg-primary'
-                            }`}>
-                            <span className="text-white font-bold text-sm lg:text-lg">M</span>
-                        </div>
-                        <span className={`text-base lg:text-lg font-semibold ${isTransparent ? 'text-white' : 'text-gray-900'}`}>
+                <Link href="/" className={`flex items-center gap-2 group ${isTransparent ? '' : ''}`}>
+                    {/* Icono Tres Pétalos - Ajustado */}
+                    <div className={`w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center transition-transform group-hover:scale-110 duration-300 ${isTransparent ? 'text-white' : 'text-primary'}`}>
+                        <svg viewBox="0 0 100 100" fill="currentColor" className="w-full h-full drop-shadow-sm transform -rotate-12">
+                            {/* Pétalo Izquierdo (Arriba-Izquierda) */}
+                            <path d="M50 60 C30 60 10 40 20 20 C40 10 50 40 50 60" className="opacity-90" />
+                            {/* Pétalo Central (Arriba-Derecha) - Más flaco y pegado a la izquierda */}
+                            <path d="M50 60 C53 35 60 15 80 25 C85 35 68 65 50 60" className="opacity-100" />
+                            {/* Pétalo Abajo-Izquierda (Revertido) */}
+                            <path d="M50 60 C40 80 20 90 10 75 C10 55 35 55 50 60" className="opacity-90" />
+                        </svg>
+                    </div>
+
+                    <div className="flex flex-col -space-y-1.5 pt-1">
+                        <span className={`font-[family-name:var(--font-great-vibes)] text-4xl lg:text-[2.75rem] text-shadow-sm leading-none ${isTransparent ? 'text-white' : 'text-primary'}`}>
                             Maranatha
                         </span>
+                        <span className={`text-[8px] lg:text-[10px] tracking-[0.3em] uppercase font-sans font-semibold text-right ${isTransparent ? 'text-white/80' : 'text-gray-500'}`}>
+                            Eventos & Decoraciones
+                        </span>
                     </div>
-                    {isTransparent && (
-                        <span className="text-[10px] text-white/70 tracking-wider">Eventos & Decoraciones</span>
-                    )}
                 </Link>
 
                 {/* Enlaces Desktop */}
@@ -178,13 +186,21 @@ export default function Navbar({ eventos, redesSociales = [], variant = 'solid' 
                 <div className="flex flex-col h-full">
                     {/* Header */}
                     <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                        <Link href="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                                <span className="text-white font-bold text-xl">M</span>
+                        <Link href="/" className="flex items-center gap-2 group" onClick={() => setMobileMenuOpen(false)}>
+                            <div className="w-10 h-10 text-primary flex items-center justify-center">
+                                <svg viewBox="0 0 100 100" fill="currentColor" className="w-full h-full transform -rotate-12">
+                                    <path d="M50 60 C30 60 10 40 20 20 C40 10 50 40 50 60" className="opacity-90" />
+                                    <path d="M50 60 C53 35 60 15 80 25 C85 35 68 65 50 60" className="opacity-100" />
+                                    <path d="M50 60 C40 80 20 90 10 75 C10 55 35 55 50 60" className="opacity-90" />
+                                </svg>
                             </div>
-                            <div className="flex flex-col">
-                                <span className="font-bold text-gray-900">Maranatha</span>
-                                <span className="text-[10px] text-gray-500 uppercase tracking-wider">Eventos & Decoración</span>
+                            <div className="flex flex-col -space-y-1.5 pt-1">
+                                <span className="font-[family-name:var(--font-great-vibes)] text-4xl text-primary leading-none text-shadow-sm">
+                                    Maranatha
+                                </span>
+                                <span className="text-[8px] tracking-[0.3em] uppercase font-sans font-semibold text-gray-500 text-right">
+                                    Eventos & Decoraciones
+                                </span>
                             </div>
                         </Link>
                         <button
@@ -215,22 +231,31 @@ export default function Navbar({ eventos, redesSociales = [], variant = 'solid' 
 
                         {/* Servicios - Acordeón */}
                         <div className="py-3 border-b border-gray-100">
-                            <button
-                                onClick={() => setServiciosOpen(!serviciosOpen)}
-                                className="w-full flex items-center justify-between text-gray-900 hover:text-primary"
-                            >
-                                <div className="flex items-center gap-3">
+                            <div className="w-full flex items-center justify-between text-gray-900 hover:text-primary">
+                                <Link
+                                    href="/servicios"
+                                    className="flex items-center gap-3 flex-1"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
                                     <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
                                         <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                         </svg>
                                     </div>
                                     <span className="font-medium">Servicios</span>
-                                </div>
-                                <svg className={`w-5 h-5 text-gray-400 transition-transform ${serviciosOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
+                                </Link>
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setServiciosOpen(!serviciosOpen);
+                                    }}
+                                    className="p-2 -mr-2"
+                                >
+                                    <svg className={`w-5 h-5 text-gray-400 transition-transform ${serviciosOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                            </div>
 
                             {/* Servicios Submenu */}
                             <div className={`overflow-hidden transition-all duration-300 ${serviciosOpen ? 'max-h-96 mt-3' : 'max-h-0'}`}>
