@@ -60,18 +60,16 @@ export default async function ContactoPage() {
     }));
 
     // Calcular cuántos items de información tenemos para ajustar el Grid
-    // Siempre tenemos Horario (+1). Chequeamos los otros 3.
+    // Siempre tenemos Horario (+1). Chequeamos los otros 2 (Direccion, Telefono).
     const hasDireccion = !!direccion;
     const hasTelefono = !!telefono;
-    const hasEmail = !!email;
-    const infoCount = (hasDireccion ? 1 : 0) + (hasTelefono ? 1 : 0) + (hasEmail ? 1 : 0) + 1; // +1 Horario
+    // Email eliminado por solicitud
+    const infoCount = (hasDireccion ? 1 : 0) + (hasTelefono ? 1 : 0) + 1; // +1 Horario
 
     // Clase dinámica para el grid. 
-    // Si son 4: lg:grid-cols-4
     // Si son 3: lg:grid-cols-3
-    // Si son 2: lg:grid-cols-2 (aunque raro)
-    let gridColsClass = "lg:grid-cols-4";
-    if (infoCount === 3) gridColsClass = "lg:grid-cols-3";
+    // Si son 2: lg:grid-cols-2
+    let gridColsClass = "lg:grid-cols-3";
     if (infoCount === 2) gridColsClass = "lg:grid-cols-2";
 
     return (
@@ -131,18 +129,11 @@ export default async function ContactoPage() {
                                 <Phone className="w-6 h-6" />
                             </div>
                             <h3 className="font-bold text-gray-900 mb-2 text-lg">Llámanos</h3>
-                            <p className="text-gray-500 text-sm">{telefono}</p>
-                        </div>
-                    )}
-
-                    {/* Card Email */}
-                    {email && (
-                        <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow text-center group h-full flex flex-col items-center justify-center">
-                            <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                                <Mail className="w-6 h-6" />
+                            <div className="flex flex-col gap-1">
+                                <p className="text-gray-500 text-sm font-medium">
+                                    {telefono} {whatsapp && <span>&nbsp;- &nbsp;{whatsapp}</span>}
+                                </p>
                             </div>
-                            <h3 className="font-bold text-gray-900 mb-2 text-lg">Escríbenos</h3>
-                            <p className="text-gray-500 text-sm break-all">{email}</p>
                         </div>
                     )}
 

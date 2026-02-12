@@ -59,6 +59,12 @@ const SOCIAL_OPTIONS = [
     { id: 'whatsapp', label: 'WhatsApp', icon: <MessageCircle className="w-4 h-4" /> },
 ];
 
+const labelMapping: Record<string, string> = {
+    descripcion: 'Mensaje de Saludo (WhatsApp)',
+    descripcion_negocio: 'Mensaje de Saludo (WhatsApp)',
+    descripcion_del_negocio: 'Mensaje de Saludo (WhatsApp)',
+};
+
 export default function ConfiguracionPage() {
     const [config, setConfig] = useState<Configuracion[]>([]);
     const [formData, setFormData] = useState<Record<string, string>>({});
@@ -384,7 +390,7 @@ export default function ConfiguracionPage() {
                                                             {keyIcons[item.clave]}
                                                         </span>
                                                     )}
-                                                    {item.clave.replace(/_/g, ' ')}
+                                                    {labelMapping[item.clave] || item.clave.replace(/_/g, ' ')}
                                                 </label>
                                             )}
 
@@ -397,7 +403,7 @@ export default function ConfiguracionPage() {
                                                         </div>
                                                     )}
 
-                                                    {item.tipo === 'textarea' ? (
+                                                    {item.tipo === 'textarea' || ['descripcion', 'descripcion_negocio', 'descripcion_del_negocio'].includes(item.clave) ? (
                                                         <textarea
                                                             value={formData[item.id] || ''}
                                                             onChange={(e) => handleChange(item.id, e.target.value)}
@@ -454,7 +460,7 @@ export default function ConfiguracionPage() {
 
             {/* Modal Agregar Red Social */}
             {showAddModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <div className="flex items-center gap-2 text-primary">
@@ -585,7 +591,7 @@ export default function ConfiguracionPage() {
 
             {/* Toast Notification */}
             {toast && (
-                <div className={`fixed bottom-6 right-6 flex items-center gap-3 px-5 py-3 rounded-full shadow-lg transform transition-all duration-300 backdrop-blur-md z-[100] animate-in slide-in-from-bottom-5 fade-in ${toast.type === 'success'
+                <div className={`fixed bottom-6 right-6 flex items-center gap-3 px-5 py-3 rounded-full shadow-lg transform transition-all duration-300 backdrop-blur-md z-100 animate-in slide-in-from-bottom-5 fade-in ${toast.type === 'success'
                     ? 'bg-green-600/90 text-white shadow-green-500/20'
                     : 'bg-red-500/90 text-white shadow-red-500/20'
                     }`}>

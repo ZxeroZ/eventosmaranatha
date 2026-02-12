@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Roboto, Great_Vibes } from "next/font/google";
 import "./globals.css";
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
   subsets: ["latin"],
   display: 'swap',
+  variable: '--font-roboto',
+});
+
+const greatVibes = Great_Vibes({
+  weight: ['400'],
+  subsets: ["latin"],
+  display: 'swap',
+  variable: '--font-great-vibes',
 });
 
 export const metadata: Metadata = {
@@ -92,7 +100,7 @@ export default function RootLayout({
 
   return (
     <html lang="es">
-      <body className={`${roboto.className} antialiased`}>
+      <body className={`${roboto.variable} ${greatVibes.variable} font-sans antialiased`}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}

@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import ProductGallery from '@/components/ProductGallery';
 import ProductCard from '@/components/ProductCard';
-import Breadcrumbs from '@/components/Breadcrumbs';
 import { MessageCircle, ShieldCheck, Palette } from 'lucide-react';
 import { Database } from '@/types/database';
 import NavbarPages from "@/components/NavbarPages";
@@ -111,17 +110,21 @@ export default async function ProductPage({ params }: { params: { id: string } }
     const { data: relacionadosData } = await query.limit(4);
     const relacionados = relacionadosData as unknown as ProductoWithEvento[];
 
-    const whatsappMessage = encodeURIComponent(`Hola, me interesa más información sobre: ${producto.titulo}`);
-    const whatsappUrl = `https://wa.me/51999999999?text=${whatsappMessage}`;
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://maranatha-eventos.vercel.app';
+    const fullImageUrl = producto.foto_principal
+        ? (producto.foto_principal.startsWith('http') ? producto.foto_principal : `${baseUrl}${producto.foto_principal}`)
+        : '';
 
-    const breadcrumbItems = [
-        { label: 'Servicios', href: '/servicios' },
-        ...(producto.eventos ? [{ label: producto.eventos.nombre, href: `/servicios?evento=${producto.evento_id}` }] : []),
-        { label: producto.titulo, current: true }
-    ];
+    const messageText = `Hola, estoy interesado en este producto:
+*${producto.titulo}*
+
+${producto.descripcion ? `Descripción: ${producto.descripcion.slice(0, 100)}...` : ''}
+
+${fullImageUrl ? `Foto: ${fullImageUrl}` : ''}`;
+
+    const whatsappUrl = `https://wa.me/${telefono?.replace(/\s+/g, '')}?text=${encodeURIComponent(messageText)}`;
 
     // Schema.org JSON-LD for SEO
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://maranatha-eventos.vercel.app';
 
     const productSchema = {
         "@context": "https://schema.org",
@@ -187,11 +190,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
             {/* Navbar en flujo normal (arriba del todo) */}
             <NavbarPages eventos={eventos || []} />
 
-            <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 pt-16 pb-12 sm:pt-24 sm:pb-12">
-
-                <div className="px-6 sm:px-0">
-                    <Breadcrumbs items={breadcrumbItems} />
-                </div>
+            <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 pt-16 pb-12 sm:pt-32 sm:pb-12">
 
                 {/* Grid Principal - items-stretch para igualar alturas */}
                 <div className="flex flex-col lg:grid lg:grid-cols-2 lg:gap-16 items-stretch">

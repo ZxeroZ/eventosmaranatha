@@ -33,6 +33,7 @@ export default async function Home() {
   const redesSociales = config?.filter((c: any) => c.categoria === 'redes_sociales') || [];
   const telefono = config?.find((c: any) => c.clave === 'telefono')?.valor;
   const direccion = config?.find((c: any) => c.clave === 'direccion')?.valor;
+  const mensaje = config?.find((c: any) => ['descripcion', 'descripcion_negocio', 'descripcion_del_negocio'].includes(c.clave))?.valor;
 
   return (
     <div className="min-h-screen bg-white">
@@ -44,7 +45,7 @@ export default async function Home() {
           <div className="absolute inset-0 rounded-b-3xl overflow-hidden">
             <HeroCarousel
               images={[
-                "/img/mesas.jpeg",
+                "/img/fotis.avif",
                 "/img/blanco.webp",
                 "/img/rosado.webp"
               ]}
@@ -98,7 +99,7 @@ export default async function Home() {
           {/* Botón CTA */}
           <div>
             <Link
-              href="https://wa.me/51999999999"
+              href={`https://wa.me/${telefono?.replace(/\s+/g, '')}?text=${encodeURIComponent(mensaje || 'Hola, me gustaría cotizar un evento.')}`}
               target="_blank"
               className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 sm:px-10 py-3.5 sm:py-4 rounded-full font-medium transition-colors text-sm sm:text-base shadow-lg"
             >
@@ -175,18 +176,20 @@ export default async function Home() {
             <div className="relative w-full h-full rounded-3xl overflow-hidden">
               <HeroCarousel
                 images={[
-                  "/img/mesas.jpeg",
+                  "/img/fotis.avif",
                   "/img/blanco.webp",
                   "/img/rosado.webp"
                 ]}
               />
 
               {/* Botón flotante - Cotizar */}
-              <div className="absolute top-6 right-6">
-                <button className="bg-primary hover:bg-primary-dark backdrop-blur-sm text-white px-5 py-2.5 rounded-full text-sm font-medium transition-colors cursor-pointer">
-                  Cotizar
-                </button>
-              </div>
+              <Link
+                href={`https://wa.me/${telefono?.replace(/\s+/g, '')}?text=${encodeURIComponent(mensaje || 'Hola, me gustaría cotizar un evento.')}`}
+                target="_blank"
+                className="absolute top-6 right-6 bg-primary hover:bg-primary-dark backdrop-blur-sm text-white px-5 py-2.5 rounded-full text-sm font-medium transition-colors cursor-pointer"
+              >
+                Cotizar
+              </Link>
             </div>
           </div>
         </div>
@@ -282,7 +285,7 @@ export default async function Home() {
               {/* Imagen 1 (Blanco) -> Móvil: Pos 1 / Desktop: Pos 2 (Derecha Arriba) */}
               <div className="relative rounded-3xl overflow-hidden shadow-lg group order-1 md:order-2">
                 <img
-                  src="/img/blanco.webp"
+                  src="/img/matri.jpeg"
                   alt="Decoración Minimalista"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
@@ -292,7 +295,7 @@ export default async function Home() {
               {/* Imagen 2 (Rosado) -> Móvil: Pos 2 / Desktop: Pos 3 (Derecha Abajo) */}
               <div className="relative rounded-3xl overflow-hidden shadow-lg group order-2 md:order-3">
                 <img
-                  src="/img/rosado.webp"
+                  src="/img/juntos.jpeg"
                   alt="Quinceaños"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
@@ -302,7 +305,7 @@ export default async function Home() {
               {/* Imagen Principal (Mesas) -> Móvil: Pos 3 (Abajo Ancho) / Desktop: Pos 1 (Izquierda Alto) */}
               <div className="relative rounded-3xl overflow-hidden shadow-lg group order-3 col-span-2 md:order-1 md:col-span-1 md:row-span-2">
                 <img
-                  src="/img/mesas.jpeg"
+                  src="/img/azul.jpeg"
                   alt="Decoración de Boda"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />

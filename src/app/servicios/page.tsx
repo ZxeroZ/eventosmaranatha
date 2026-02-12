@@ -4,7 +4,6 @@ import Image from "next/image";
 import NavbarPages from "@/components/NavbarPages";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
-import Breadcrumbs from "@/components/Breadcrumbs";
 
 interface Evento {
     id: string;
@@ -82,15 +81,8 @@ export default async function ServiciosPage({ searchParams }: PageProps) {
             {/* Vista de productos filtrados por categoría */}
             {eventoFiltro && eventoActual ? (
                 <>
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-0">
-                        <Breadcrumbs items={[
-                            { label: 'Servicios', href: '/servicios' },
-                            { label: eventoActual.nombre, current: true }
-                        ]} />
-                    </div>
-
                     {/* Hero Section V4: Color Sólido con Imagen Decorativa */}
-                    <section className="relative bg-primary overflow-hidden pt-4 md:pt-8">
+                    <section className="relative bg-primary overflow-hidden pt-20 md:pt-32">
                         {/* Patrón decorativo de fondo */}
                         <div className="absolute inset-0 opacity-10">
                             <div className="absolute top-0 left-0 w-full h-full" style={{
@@ -225,14 +217,8 @@ export default async function ServiciosPage({ searchParams }: PageProps) {
             ) : (
                 /* Vista de categorías/servicios (Sin cambios) */
                 <>
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-0">
-                        <Breadcrumbs items={[
-                            { label: 'Servicios', current: true }
-                        ]} />
-                    </div>
-
                     {/* Hero Section */}
-                    <section className="relative pt-4 pb-6 md:pt-8 md:pb-12 overflow-hidden">
+                    <section className="relative pt-20 pb-6 md:pt-32 md:pb-12 overflow-hidden">
                         {/* Background con gradiente y patrón */}
                         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-white to-pink-50/50" />
                         <div className="absolute inset-0 opacity-30">
