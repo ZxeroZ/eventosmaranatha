@@ -63,6 +63,8 @@ const labelMapping: Record<string, string> = {
     descripcion: 'Mensaje de Saludo (WhatsApp)',
     descripcion_negocio: 'Mensaje de Saludo (WhatsApp)',
     descripcion_del_negocio: 'Mensaje de Saludo (WhatsApp)',
+    telefono: 'WhatsApp',
+    whatsapp: 'Teléfono',
 };
 
 export default function ConfiguracionPage() {
