@@ -47,7 +47,6 @@ export default function EventosPage() {
             if (currentEvento.id) {
                 const updatePayload: Database['public']['Tables']['eventos']['Update'] = {
                     nombre: currentEvento.nombre,
-                    descripcion: currentEvento.descripcion,
                     activo: currentEvento.activo,
                     imagen_url: currentEvento.imagen_url
                 };
@@ -59,7 +58,6 @@ export default function EventosPage() {
             } else {
                 const insertPayload: Database['public']['Tables']['eventos']['Insert'] = {
                     nombre: currentEvento.nombre!,
-                    descripcion: currentEvento.descripcion,
                     activo: currentEvento.activo !== undefined ? currentEvento.activo : true,
                     imagen_url: currentEvento.imagen_url
                 };
@@ -74,7 +72,7 @@ export default function EventosPage() {
             fetchEventos();
         } catch (error) {
             console.error('Error saving evento:', error);
-            alert('Error al guardar el evento');
+            alert(`Error al guardar el evento: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
         } finally {
             setSaving(false);
         }
